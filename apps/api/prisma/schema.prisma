@@ -1,0 +1,133 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserTipo {
+  GANADERO
+  COMPRADOR
+}
+
+enum AnimalEstado {
+  DISPONIBLE
+  EN_LOTE
+  VENDIDO
+}
+
+enum LotEstado {
+  DISPONIBLE
+  VENDIDO
+}
+
+model User {
+  id                  String       @id
+  nombre              String
+  tipo                UserTipo
+  finca_nombre        String?
+  departamento        String
+  municipio           String
+  telefono            String
+  verificado          Boolean      @default(false)
+  reputacion_promedio Float        @default(0.0)
+  createdAt           DateTime     @default(now())
+  
+  animals             Animal[]
+  lots                Lot[]
+  interests           Interest[]
+  salesAsVendedor     Sale[]       @relation("VendedorSales")
+  salesAsComprador    Sale[]       @relation("CompradorSales")
+  ratingsGiven        Rating[]     @relation("RatingsGiven")
+  ratingsReceived     Rating[]     @relation("RatingsReceived")
+}
+
+model Animal {
+  id                      String       @id @default(cuid())
+  nombre                  String
+  arete                   String
+  raza                    String
+  peso                    Float
+  precio                  Decimal      @db.Decimal(12, 2)
+  estado                  AnimalEstado @default(DISPONIBLE)
+  foto_url                String?
+  userId                  String
+  loteId                  String?
+  createdAt               DateTime     @default(now())
+  
+  // Medical Withdrawal Fields
+  en_periodo_retiro       Boolean      @default(false)
+  medicamento_retiro      String?
+  fecha_limite_retiro     DateTime?
+
+  user                    User         @relation(fields: [userId], references: [id])
+  lot                     Lot?         @relation(fields: [loteId], references: [id])
+  interests               Interest[]
+  sales                   Sale[]
+}
+
+model Lot {
+  id            String      @id @default(cuid())
+  nombre        String
+  cantidad      Int
+  peso_total    Float
+  peso_promedio Float
+  precio        Decimal     @db.Decimal(12, 2)
+  estado        LotEstado   @default(DISPONIBLE)
+  foto_url      String?
+  departamento  String
+  municipio     String
+  userId        String
+  createdAt     DateTime    @default(now())
+
+  user          User        @relation(fields: [userId], references: [id])
+  animals       Animal[]
+  interests     Interest[]
+  sales         Sale[]
+}
+
+model Interest {
+  id          String   @id @default(cuid())
+  compradorId String
+  animalId    String?
+  loteId      String?
+  timestamp   DateTime @default(now())
+
+  comprador   User     @relation(fields: [compradorId], references: [id])
+  animal      Animal?  @relation(fields: [animalId], references: [id])
+  lot         Lot?     @relation(fields: [loteId], references: [id])
+}
+
+model Sale {
+  id             String   @id @default(cuid())
+  animalId       String?
+  loteId         String?
+  vendedorId     String
+  compradorId    String
+  precio_final   Decimal  @db.Decimal(12, 2)
+  via_plataforma Boolean
+  createdAt      DateTime @default(now())
+
+  animal         Animal?  @relation(fields: [animalId], references: [id])
+  lot            Lot?     @relation(fields: [loteId], references: [id])
+  vendedor       User     @relation("VendedorSales", fields: [vendedorId], references: [id])
+  comprador      User     @relation("CompradorSales", fields: [compradorId], references: [id])
+  ratings        Rating[]
+}
+
+model Rating {
+  id             String   @id @default(cuid())
+  calificadorId  String
+  calificadoId   String
+  saleId         String
+  estrellas      Int
+  criterio       String
+  comentario     String?
+  createdAt      DateTime @default(now())
+
+  calificador    User     @relation("RatingsGiven", fields: [calificadorId], references: [id])
+  calificado     User     @relation("RatingsReceived", fields: [calificadoId], references: [id])
+  sale           Sale     @relation(fields: [saleId], references: [id])
+}

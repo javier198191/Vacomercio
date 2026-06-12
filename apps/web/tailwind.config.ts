@@ -1,0 +1,107 @@
+import type { Config } from 'tailwindcss';
+
+const config: Config = {
+  content: [
+    './pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        'on-tertiary-fixed-variant': '#274e3d',
+        'surface-bright': '#f8f9ff',
+        'surface-container-lowest': '#ffffff',
+        'primary-container': '#2d6a4f',
+        'on-primary-fixed-variant': '#0e5138',
+        'on-primary': '#ffffff',
+        'on-secondary-fixed': '#2f1500',
+        'on-error-container': '#93000a',
+        'surface-container-high': '#dee9fc',
+        'tertiary-fixed': '#c1ecd4',
+        'on-secondary-fixed-variant': '#6e3900',
+        'secondary-fixed': '#ffdcc3',
+        'surface-tint': '#2c694e',
+        'on-secondary-container': '#663500',
+        'surface-container-low': '#eff4ff',
+        'on-tertiary': '#ffffff',
+        'inverse-on-surface': '#eaf1ff',
+        'inverse-surface': '#27313f',
+        'on-primary-fixed': '#002114',
+        'surface-container-highest': '#d9e3f6',
+        'on-background': '#121c2a',
+        'on-surface': '#121c2a',
+        'background': '#f8f9ff',
+        'inverse-primary': '#95d4b3',
+        'primary-fixed-dim': '#95d4b3',
+        'surface-variant': '#d9e3f6',
+        'on-secondary': '#ffffff',
+        'tertiary-fixed-dim': '#a5d0b9',
+        'on-surface-variant': '#404943',
+        'on-tertiary-fixed': '#002114',
+        'surface': '#f8f9ff',
+        'primary-fixed': '#b1f0ce',
+        'on-tertiary-container': '#b8e3cb',
+        'surface-dim': '#d0dbed',
+        'tertiary': '#274f3d',
+        'on-primary-container': '#a8e7c5',
+        'outline-variant': '#bfc9c1',
+        'outline': '#707973',
+        'secondary-fixed-dim': '#ffb77d',
+        'tertiary-container': '#3f6754',
+        'surface-container': '#e6eeff',
+        'error': '#ba1a1a',
+        'primary': '#0f5238',
+        'error-container': '#ffdad6',
+        'secondary': '#904d00',
+        'secondary-container': '#fe932c',
+        'on-error': '#ffffff'
+      },
+      borderRadius: {
+        'DEFAULT': '0.125rem',
+        'lg': '0.25rem',
+        'xl': '0.5rem',
+        'full': '9999px' // Use standard full rounding for pill shapes, and let xl/lg/default handle the rest.
+      },
+      spacing: {
+        'gutter': '24px',
+        'lg': '48px',
+        'xl': '80px',
+        'base': '8px',
+        'container-max': '1280px',
+        'md': '24px',
+        'sm': '12px',
+        'margin-mobile': '16px',
+        'xs': '4px'
+      },
+      fontFamily: {
+        'headline-xl': ['Montserrat', 'sans-serif'],
+        'body-sm': ['Inter', 'sans-serif'],
+        'headline-xl-mobile': ['Montserrat', 'sans-serif'],
+        'label-bold': ['Inter', 'sans-serif'],
+        'headline-lg-mobile': ['Montserrat', 'sans-serif'],
+        'label-sm': ['Inter', 'sans-serif'],
+        'body-md': ['Inter', 'sans-serif'],
+        'headline-lg': ['Montserrat', 'sans-serif'],
+        'headline-md': ['Montserrat', 'sans-serif'],
+        'body-lg': ['Inter', 'sans-serif']
+      },
+      fontSize: {
+        'headline-xl': ['40px', { lineHeight: '48px', letterSpacing: '-0.02em', fontWeight: '700' }],
+        'body-sm': ['14px', { lineHeight: '20px', fontWeight: '400' }],
+        'headline-xl-mobile': ['32px', { lineHeight: '40px', letterSpacing: '-0.02em', fontWeight: '700' }],
+        'label-bold': ['14px', { lineHeight: '16px', fontWeight: '600' }],
+        'headline-lg-mobile': ['24px', { lineHeight: '32px', fontWeight: '700' }],
+        'label-sm': ['12px', { lineHeight: '16px', fontWeight: '500' }],
+        'body-md': ['16px', { lineHeight: '24px', fontWeight: '400' }],
+        'headline-lg': ['32px', { lineHeight: '40px', fontWeight: '700' }],
+        'headline-md': ['24px', { lineHeight: '32px', fontWeight: '600' }],
+        'body-lg': ['18px', { lineHeight: '28px', fontWeight: '400' }]
+      }
+    },
+  },
+  plugins: [],
+};
+
+export default config;

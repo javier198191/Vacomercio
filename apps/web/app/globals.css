@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-background text-on-background font-body-md min-h-screen flex flex-col;
+  }
+}
+
+/* Custom scrollbar for gallery */
+.gallery-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+.gallery-scroll::-webkit-scrollbar-track {
+  background: #e6eeff;
+  border-radius: 4px;
+}
+.gallery-scroll::-webkit-scrollbar-thumb {
+  background: #bfc9c1;
+  border-radius: 4px;
+}
+
+.custom-checkbox:checked {
+  background-color: #0f5238;
+  border-color: #0f5238;
+}
