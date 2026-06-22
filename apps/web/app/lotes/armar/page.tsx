@@ -1,23 +1,19 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { CattleTable, CattleRow } from '@/components/lot-builder/CattleTable';
 import { SelectionPanel } from '@/components/lot-builder/SelectionPanel';
 import { LotSummaryBar } from '@/components/lot-builder/LotSummaryBar';
 import { LocationDropdowns } from '@/components/listing/LocationDropdowns';
 
-// ── Mock inventory ────────────────────────────────────────────────────────────
-const MOCK_INVENTORY: CattleRow[] = [
-  { id: 'a1', nombre: 'Toro Brahman', arete: '8492', raza: 'Brahman Comercial', peso: 450, precio: 3150000, foto_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAGQ6dulItVlU2ZwPp0MoXV2ewURGwAZoq4uHqbsp2zLVu1iI8BeHeMDvtOamPk2D2ZSqs_8TPp_nfG2oLMLvsY5V8pgckeprLZN42_M_Ij58fNpkcK7joTKf1loVLPO6P8J6u3nNo6yLZE6CeYYJrrFw8_Sm95fc6uJ3jCxxYklkXu1ceIpf3R31X81WxURZl5pm9ruVwKj7jh7NbD6MbnQy5jdFeBu1A_PHxouLcaFrTFUHv8ym-S4xVtepzqANG1fSUm4I299ic', en_periodo_retiro: false },
-  { id: 'a2', nombre: 'Novillo F1', arete: '8495', raza: 'Cruce Brahman x Angus', peso: 420, precio: 2940000, foto_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCL-4-jaYSUTN25PWqizPPO_cmma_bTW1VkhbHWNb6HCOVAD0DBpUOFGcnVh6VOJs_0QEOx8nFjXV3xcMr8wRbw13jZTCMo6Z85ctmrQ5XFxeKHRiz7mNotSHzFuiPKOJINkG0B0XgMSyJKcInHImTXWsarCqsfZVxNaav2_v9SN56q1zB2a6rLpCec3pXzrw_OiHYmtX-li9SgU7eIOCu6L5359jotjtg2-12Zl9YMBb7OavMtm1yHP_dwkIKvUh3o7BepVILF9lY', en_periodo_retiro: false },
-  { id: 'a3', nombre: 'Novillo F1', arete: '8498', raza: 'Cruce Brahman x Angus', peso: 360, precio: 2310000, foto_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBulYCxyZ2HQmuRFvfRxD5o7wj4WnyjAFQgCqI-hsiFVDklHJ1hFSLanoR7VvSLBC4v7-57UnAuXRHQdH8P3aUNOaTCKjRQDRx5uE1qgGvsE-A9LRawYFuSyfo8Ld_VdxsXAsl_LvIzKf8Wa6prGJz4SZtU4OXKYbfaaJzzPOV530CYqfGDxSq5ro-RsVkGVaNuuJiy8uut2z_L5qstkrEQxG7gdOAQZlQgstZTsHNsQrdRLuZEJe_iTDnmy-Ru7EuxT1rsnHTBGJA', en_periodo_retiro: true },
-  { id: 'a4', nombre: 'Ternero', arete: '8501', raza: 'Brahman Comercial', peso: 180, precio: 1100000, foto_url: null, en_periodo_retiro: false },
-  { id: 'a5', nombre: 'Ternera', arete: '8502', raza: 'Gyr', peso: 165, precio: 1050000, foto_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAaHwRu2K3af5xeBKJcbrwlDfCHK8b3uA67Um1OZzlvosBNcTO5icA_sfJaXbEm22ziRDCUi3QJpOENSQ2YSFPfTG0bG5eyvO0ym3_mvit_BJBH9FJsuM1KkBEADrAFv81q5oul_8FIdDV9NLYTSiagTaWLXTLYyZY5xiM2ALgltOy1WXIvWHspBa0Tfx8jiaDiiwXZW020aLrRXUQzAUgI36T1fIJ5elbrilU', en_periodo_retiro: false },
-];
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const TEMP_USER_ID = 'user-1';
 
 export default function LotesArmarPage() {
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set(['a1', 'a2']));
+  const [inventory, setInventory] = useState<CattleRow[]>([]);
+  const [loadingInventory, setLoadingInventory] = useState(true);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
   const [lotName, setLotName] = useState('');
   const [departamento, setDepartamento] = useState('');
@@ -26,10 +22,29 @@ export default function LotesArmarPage() {
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
+  const fetchInventory = async () => {
+    setLoadingInventory(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/animals/owner/${TEMP_USER_ID}`);
+      if (!res.ok) throw new Error('Error al cargar el inventario');
+      const data = await res.json();
+      setInventory(data);
+    } catch (err: any) {
+      console.error(err);
+      setErrorMsg('Error al cargar el inventario: ' + err.message);
+    } finally {
+      setLoadingInventory(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchInventory();
+  }, []);
+
   // Derived metrics
   const selectedAnimals = useMemo(
-    () => MOCK_INVENTORY.filter((a) => selectedIds.has(a.id)),
-    [selectedIds]
+    () => inventory.filter((a) => selectedIds.has(a.id)),
+    [selectedIds, inventory]
   );
   const pesoTotal = useMemo(
     () => selectedAnimals.reduce((s, a) => s + a.peso, 0),
@@ -58,12 +73,13 @@ export default function LotesArmarPage() {
   };
 
   const handleToggleAll = (checked: boolean) => {
-    if (checked) setSelectedIds(new Set(MOCK_INVENTORY.map((a) => a.id)));
+    if (checked) setSelectedIds(new Set(inventory.map((a) => a.id)));
     else setSelectedIds(new Set());
   };
 
   const handleSubmit = async () => {
     setErrorMsg('');
+    setSuccessMsg('');
     if (!lotName.trim()) { setErrorMsg('Por favor ingresa un nombre para el lote.'); return; }
     if (!departamento || !municipio) { setErrorMsg('Por favor selecciona departamento y municipio.'); return; }
     if (hasWithdrawal) {
@@ -71,11 +87,38 @@ export default function LotesArmarPage() {
       return;
     }
     setIsSubmitting(true);
-    await new Promise((r) => setTimeout(r, 1500));
-    setIsSubmitting(false);
-    setSuccessMsg(`✅ Lote "${lotName}" creado con ${selectedIds.size} animales y publicado en el marketplace.`);
-    setSelectedIds(new Set());
-    setLotName('');
+    try {
+      const payload = {
+        nombre: lotName,
+        animalIds: Array.from(selectedIds),
+        departamento,
+        municipio,
+        userId: TEMP_USER_ID,
+        precio: precioTotal,
+      };
+
+      const res = await fetch(`${API_BASE_URL}/lots/create-dynamic`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData?.message || 'Error al crear el lote dinámico.');
+      }
+
+      setSuccessMsg(`✅ Lote "${lotName}" creado con ${selectedIds.size} animales y publicado en el marketplace.`);
+      setSelectedIds(new Set());
+      setLotName('');
+      fetchInventory();
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Ocurrió un error inesperado.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -125,7 +168,7 @@ export default function LotesArmarPage() {
           {/* Left: Inventory Table */}
           <div className="lg:col-span-2">
             <CattleTable
-              animals={MOCK_INVENTORY}
+              animals={inventory}
               selectedIds={selectedIds}
               onToggle={handleToggle}
               onToggleAll={handleToggleAll}

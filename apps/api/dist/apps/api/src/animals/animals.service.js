@@ -1,0 +1,94 @@
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AnimalsService = void 0;
+const common_1 = require("@nestjs/common");
+const prisma_service_1 = require("../prisma/prisma.service");
+const client_1 = require("@prisma/client");
+let AnimalsService = class AnimalsService {
+    constructor(prisma) {
+        this.prisma = prisma;
+    }
+    async create(createAnimalDto) {
+        const { fecha_limite_retiro, precio, ...data } = createAnimalDto;
+        const existing = await this.prisma.animal.findFirst({
+            where: { arete: data.arete },
+        });
+        if (existing) {
+            throw new common_1.ConflictException('El número de arete ya se encuentra registrado');
+        }
+        const estado = data.loteId ? client_1.AnimalEstado.EN_LOTE : client_1.AnimalEstado.DISPONIBLE;
+        return this.prisma.animal.create({
+            data: {
+                ...data,
+                precio,
+                estado,
+                fecha_limite_retiro: fecha_limite_retiro ? new Date(fecha_limite_retiro) : null,
+            },
+        });
+    }
+    async findAll() {
+        return this.prisma.animal.findMany({
+            include: {
+                lot: true,
+                user: true,
+            },
+        });
+    }
+    async findOne(id) {
+        const animal = await this.prisma.animal.findUnique({
+            where: { id },
+            include: {
+                lot: true,
+                user: true,
+            },
+        });
+        if (!animal) {
+            throw new common_1.NotFoundException(`Animal with ID ${id} not found`);
+        }
+        return animal;
+    }
+    async update(id, updateAnimalDto) {
+        await this.findOne(id);
+        const { fecha_limite_retiro, precio, ...data } = updateAnimalDto;
+        const updateData = { ...data };
+        if (precio !== undefined) {
+            updateData.precio = precio;
+        }
+        if (fecha_limite_retiro !== undefined) {
+            updateData.fecha_limite_retiro = fecha_limite_retiro ? new Date(fecha_limite_retiro) : null;
+        }
+        if (updateAnimalDto.loteId !== undefined) {
+            if (updateAnimalDto.loteId) {
+                updateData.estado = client_1.AnimalEstado.EN_LOTE;
+            }
+            else {
+                updateData.estado = client_1.AnimalEstado.DISPONIBLE;
+            }
+        }
+        return this.prisma.animal.update({
+            where: { id },
+            data: updateData,
+        });
+    }
+    async remove(id) {
+        await this.findOne(id);
+        return this.prisma.animal.delete({
+            where: { id },
+        });
+    }
+};
+exports.AnimalsService = AnimalsService;
+exports.AnimalsService = AnimalsService = __decorate([
+    (0, common_1.Injectable)(),
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+], AnimalsService);
+//# sourceMappingURL=animals.service.js.map

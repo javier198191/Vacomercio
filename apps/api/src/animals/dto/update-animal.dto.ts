@@ -1,4 +1,5 @@
-import { IsString, IsNumber, IsOptional, IsBoolean, IsDateString } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsBoolean, IsDateString, IsPositive, Max, IsEnum } from 'class-validator';
+import { AnimalRaza, AnimalTipo } from '@prisma/client';
 
 export class UpdateAnimalDto {
   @IsOptional()
@@ -10,15 +11,22 @@ export class UpdateAnimalDto {
   arete?: string;
 
   @IsOptional()
-  @IsString()
-  raza?: string;
+  @IsEnum(AnimalRaza)
+  raza?: AnimalRaza;
+
+  @IsOptional()
+  @IsEnum(AnimalTipo)
+  tipo?: AnimalTipo;
 
   @IsOptional()
   @IsNumber()
+  @IsPositive({ message: 'El peso debe ser mayor a 0' })
+  @Max(1500, { message: 'El peso debe ser menor a 1500 kg' })
   peso?: number;
 
   @IsOptional()
   @IsNumber()
+  @IsPositive({ message: 'El precio debe ser mayor a 0' })
   precio?: number;
 
   @IsOptional()

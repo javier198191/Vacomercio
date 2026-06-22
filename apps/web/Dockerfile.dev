@@ -1,0 +1,21 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy lockfiles and configuration files
+COPY package*.json tsconfig.json ./
+
+# Copy shared packages and web source code
+COPY packages/shared ./packages/shared
+COPY apps/web ./apps/web
+
+# Install dependencies
+RUN npm install
+
+# Build the shared packages first so the frontend has access to compiled TS types
+RUN npm run shared:build
+
+EXPOSE 3000
+
+# Run Next.js in development mode
+CMD ["npm", "run", "web:dev"]

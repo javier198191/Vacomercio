@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import { PhotoGallery } from '@/components/producto/PhotoGallery';
 import { SellerReputation } from '@/components/producto/SellerReputation';
 import { WhatsAppButton } from '@/components/producto/WhatsAppButton';
@@ -34,44 +35,105 @@ interface ProductDetailData {
   };
 }
 
-// ── Mock resolver (replace with prisma fetch via route handler) ───────────────
-function getMockProduct(id: string): ProductDetailData {
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+const capitalize = (str: string) => {
+  if (!str) return '';
+  // Support accent on Cebú
+  if (str.toUpperCase() === 'CEBU') return 'Cebú';
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+};
+
+function mapToProductDetail(raw: any, tipo: 'individual' | 'lote'): ProductDetailData {
+  const isLote = tipo === 'lote';
+  const fotos = raw.foto_url ? [raw.foto_url] : [];
+  
+  const descripcion = isLote
+    ? `Lote de ganado con ${raw.cantidad} animales. Ubicado en ${raw.municipio || 'N/A'}, ${raw.departamento || 'N/A'}.`
+    : `Animal individual de tipo ${raw.tipo ? capitalize(raw.tipo) : 'No especificado'} y raza ${raw.raza ? capitalize(raw.raza) : 'No especificada'}. Arete: ${raw.arete || 'N/A'}.`;
+
+  const metrics: Metric[] = isLote
+    ? [
+        { icon: 'scale', label: 'Peso Promedio', value: `${raw.peso_promedio} Kg` },
+        { icon: 'group', label: 'Cantidad', value: `${raw.cantidad} Cabezas` },
+        { icon: 'monitor_weight', label: 'Peso Total Aprox.', value: `${raw.peso_total} Kg` },
+      ]
+    : [
+        { icon: 'scale', label: 'Peso', value: `${raw.peso} Kg` },
+        { icon: 'tag', label: 'Arete', value: raw.arete || 'N/A' },
+        { icon: 'pets', label: 'Raza', value: raw.raza ? capitalize(raw.raza) : 'No especificada' },
+        { icon: 'info', label: 'Tipo', value: raw.tipo ? capitalize(raw.tipo) : 'No especificado' },
+      ];
+
+  const departamento = raw.departamento || raw.user?.departamento || 'N/A';
+  const municipio = raw.municipio || raw.user?.municipio || 'N/A';
+
   return {
-    id,
-    nombre: '45 Novillos Brahman',
-    estado: 'DISPONIBLE',
-    tipo: 'lote',
-    fotos: [
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuAajRiLftqtbyj2dkrU42rUcc3MDSN1GXm1uF4V0E4nT3MQ8XmzIfVSi2n2ZYI_vw64x2fukoF45zVX9iYy7OGTgmluUYIvKjfU3TU3bqDwR1TnAS8LUz8agfvGUkGb_Lk-4AqJgsRprsiDNR7A8fWmyKevOuA3onEnNuKTroq4hvusD8tphoXyqES_inp_b_qT_BUk9I9i2xXXlgcHcJpZQthhmACyGVZtHaQ-ubf6gKLEYZdUS83qCSG3cjDFLI18HCA9ngZ0cHw',
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuBtkXF5o42RRO-dDBjHYj7TBumI7ZOoN6kqpufPxqQaIKjNFT-hoZtTyxMbaNXpbxQIoI3zOoRartgtcqE3W-jiP-LXVt14JgBw6Pnm12h4YAOsOAMw1YT4Z1eZy8UkurRh8h1mEdWidif-cdUP5lcsrAYHUuMWccpNa3oEmfGZZHoM5zQ7AqKNThXADMFdmMUfWYJeKTZtRTxIXhqMRsTmLeFy370nZJlWaT9mkzvMUQ8cBNF6AXThE45PNQfZmaoB4g5HSxK2q9o',
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuCzpTPmLX_B43shF7VBYi0nsWLRrdWZE1qOLcoEc_P4QYI2gzcUadY2kQZOGGa3klnJqFn9hqQ1PiS6GZw7QSpTKgkhXAP0985j1FlGFOOBj5AX5SE2CfOYTrrrFHVn3QwU_J-y-joZvhA3oGedOjF8WOMsWbkABwYKIf6wk1LJkUqbaIqjekEmF3CeL6L4vm9vjiZGsG5ju9T-iAQkWBYikE9c9xeKSoNJwIvrm8vzM4Kt7O-vpDiCCNn9XiBuAbYWNw',
-    ],
-    descripcion:
-      'Excelente lote de 45 novillos Brahman comerciales, con un peso promedio muy parejo. Animales sanos, con plan sanitario al día, ideales para ceba rápida. Han estado en pasturas de braquiaria con suplementación mineral constante.\n\nSe garantiza la trazabilidad y procedencia de la Hacienda El Porvenir. Listos para despacho inmediato tras confirmación de pago.',
-    precio: 8500,
-    precioLabel: 'COP/Kg',
-    metrics: [
-      { icon: 'scale', label: 'Peso Promedio', value: '320 Kg' },
-      { icon: 'group', label: 'Cantidad', value: '45 Cabezas' },
-      { icon: 'male', label: 'Sexo', value: 'Machos' },
-      { icon: 'monitor_weight', label: 'Peso Total Aprox.', value: '14.400 Kg' },
-    ],
-    departamento: 'Atlántico',
-    municipio: 'Sabanalarga',
+    id: raw.id,
+    nombre: raw.nombre,
+    estado: raw.estado === 'VENDIDO' ? 'VENDIDO' : 'DISPONIBLE',
+    tipo,
+    fotos,
+    descripcion,
+    precio: Number(raw.precio),
+    precioLabel: isLote ? 'COP (Total)' : 'COP',
+    metrics,
+    departamento,
+    municipio,
     vendedor: {
-      nombre: 'Carlos Hernández',
-      finca: 'Hacienda El Porvenir',
-      telefono: '+573001234567',
-      verificado: true,
-      reputacion_promedio: 4.8,
-      total_ventas: 124,
+      nombre: raw.user?.nombre || 'Vendedor',
+      finca: raw.user?.finca_nombre || undefined,
+      telefono: raw.user?.telefono || '',
+      verificado: raw.user?.verificado || false,
+      reputacion_promedio: raw.user?.reputacion_promedio || 0,
+      total_ventas: 0,
     },
   };
 }
 
+async function getProduct(id: string): Promise<ProductDetailData | null> {
+  try {
+    const animalRes = await fetch(`${API_BASE_URL}/marketplace/animal/${id}`, {
+      cache: 'no-store'
+    });
+    if (animalRes.status === 200) {
+      const animal = await animalRes.json();
+      return mapToProductDetail(animal, 'individual');
+    }
+    if (animalRes.status !== 404) {
+      console.error(`Error fetching animal: status ${animalRes.status}`);
+      return null;
+    }
+  } catch (error) {
+    console.error('Error fetching animal:', error);
+    return null;
+  }
+
+  try {
+    const lotRes = await fetch(`${API_BASE_URL}/marketplace/lot/${id}`, {
+      cache: 'no-store'
+    });
+    if (lotRes.status === 200) {
+      const lot = await lotRes.json();
+      return mapToProductDetail(lot, 'lote');
+    }
+    if (lotRes.status !== 404) {
+      console.error(`Error fetching lot: status ${lotRes.status}`);
+    }
+  } catch (error) {
+    console.error('Error fetching lot:', error);
+  }
+
+  return null;
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
-export default function ProductoDetailPage({ params }: { params: { id: string } }) {
-  const product = getMockProduct(params.id);
+export default async function ProductoDetailPage({ params }: { params: { id: string } }) {
+  const product = await getProduct(params.id);
+  
+  if (!product) {
+    notFound();
+  }
 
   const formatPrice = (val: number) =>
     new Intl.NumberFormat('es-CO', {

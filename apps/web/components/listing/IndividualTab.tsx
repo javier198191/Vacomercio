@@ -2,12 +2,14 @@
 
 import React from 'react';
 import { Input } from '../ui/Input';
+import { Select } from '../ui/Select';
 
 interface IndividualTabProps {
   formData: {
     nombre: string;
     arete: string;
     raza: string;
+    tipo: string;
     peso: string;
     precio: string;
     foto_url: string;
@@ -15,7 +17,21 @@ interface IndividualTabProps {
   onChange: (field: string, value: string) => void;
 }
 
-const RAZAS = ['Brahman', 'Cebú', 'Angus', 'Cruzado', 'Gyr', 'Nelore', 'Simmental'];
+const RAZAS_OPTIONS = [
+  { value: 'BRAHMAN', label: 'Brahman' },
+  { value: 'GYR', label: 'Gyr' },
+  { value: 'ANGUS', label: 'Angus' },
+  { value: 'CEBU', label: 'Cebú' },
+  { value: 'CRUZADO', label: 'Cruzado' },
+  { value: 'NELORE', label: 'Nelore' },
+  { value: 'SIMMENTAL', label: 'Simmental' },
+];
+
+const TIPOS_OPTIONS = [
+  { value: 'NOVILLO', label: 'Novillo' },
+  { value: 'VACA', label: 'Vaca' },
+  { value: 'TORO', label: 'Toro' },
+];
 
 export const IndividualTab: React.FC<IndividualTabProps> = ({ formData, onChange }) => {
   return (
@@ -52,23 +68,27 @@ export const IndividualTab: React.FC<IndividualTabProps> = ({ formData, onChange
           onChange={(e) => onChange('arete', e.target.value)}
         />
 
-        {/* Raza Select */}
-        <div className="flex flex-col gap-xs">
-          <label className="font-label-bold text-label-bold text-on-surface" htmlFor="raza-individual">
-            Raza
-          </label>
-          <select
-            id="raza-individual"
-            value={formData.raza}
-            onChange={(e) => onChange('raza', e.target.value)}
-            className="border border-outline-variant bg-surface-bright rounded px-sm py-sm text-body-md focus:border-2 focus:border-primary focus:outline-none transition-colors"
-          >
-            <option value="">Seleccionar raza</option>
-            {RAZAS.map((r) => (
-              <option key={r} value={r}>{r}</option>
-            ))}
-          </select>
-        </div>
+        <Select
+          label="Raza"
+          id="raza-individual"
+          value={formData.raza}
+          onChange={(e) => onChange('raza', e.target.value)}
+          options={[
+            { value: '', label: 'Seleccionar raza' },
+            ...RAZAS_OPTIONS,
+          ]}
+        />
+
+        <Select
+          label="Tipo de Ganado"
+          id="tipo-individual"
+          value={formData.tipo}
+          onChange={(e) => onChange('tipo', e.target.value)}
+          options={[
+            { value: '', label: 'Seleccionar tipo' },
+            ...TIPOS_OPTIONS,
+          ]}
+        />
 
         <Input
           label="Peso actual (kg)"

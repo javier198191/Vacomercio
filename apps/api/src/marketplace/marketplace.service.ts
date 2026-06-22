@@ -30,7 +30,7 @@ export class MarketplaceService {
     }
 
     // 2. Resolve Price range filters
-    let priceFilter: Prisma.DecimalNullableFilter | Prisma.DecimalFilter | undefined = undefined;
+    let priceFilter: Prisma.DecimalFilter | undefined = undefined;
     if (query.priceCategory) {
       if (query.priceCategory === 'LEVANTE') {
         priceFilter = { gte: 800000, lte: 1500000 };

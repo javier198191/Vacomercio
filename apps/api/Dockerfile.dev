@@ -1,0 +1,27 @@
+FROM node:20-alpine
+
+# Install openssl for Prisma engine compatibility on Alpine
+RUN apk add --no-cache openssl
+
+WORKDIR /app
+
+# Copy lockfiles and configuration files
+COPY package*.json tsconfig.json ./
+
+# Copy shared packages and api source code
+COPY packages/shared ./packages/shared
+COPY apps/api ./apps/api
+
+# Install dependencies (workspaces automatically resolve local directories)
+RUN npm install
+
+# Build the shared packages first so the API has access to compiled TS types
+RUN npm run shared:build
+
+# Generate Prisma Client using the local schema
+RUN npx prisma generate --schema=apps/api/prisma/schema.prisma
+
+EXPOSE 3001
+
+# Run NestJS in development mode
+CMD ["npm", "run", "api:dev"]

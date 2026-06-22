@@ -1,6 +1,7 @@
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 generator client {
@@ -21,6 +22,22 @@ enum AnimalEstado {
 enum LotEstado {
   DISPONIBLE
   VENDIDO
+}
+
+enum AnimalRaza {
+  BRAHMAN
+  GYR
+  ANGUS
+  CEBU
+  CRUZADO
+  NELORE
+  SIMMENTAL
+}
+
+enum AnimalTipo {
+  NOVILLO
+  VACA
+  TORO
 }
 
 model User {
@@ -48,7 +65,8 @@ model Animal {
   id                      String       @id @default(cuid())
   nombre                  String
   arete                   String
-  raza                    String
+  raza                    AnimalRaza
+  tipo                    AnimalTipo
   peso                    Float
   precio                  Decimal      @db.Decimal(12, 2)
   estado                  AnimalEstado @default(DISPONIBLE)

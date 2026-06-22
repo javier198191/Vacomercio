@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateAnimalDto } from './dto/create-animal.dto';
 import { UpdateAnimalDto } from './dto/update-animal.dto';
@@ -11,6 +11,14 @@ export class AnimalsService {
   async create(createAnimalDto: CreateAnimalDto) {
     const { fecha_limite_retiro, precio, ...data } = createAnimalDto;
     
+    // Check if an animal with the same arete already exists
+    const existing = await this.prisma.animal.findFirst({
+      where: { arete: data.arete },
+    });
+    if (existing) {
+      throw new ConflictException('El número de arete ya se encuentra registrado');
+    }
+
     // Automatically transition to EN_LOTE if loteId is provided during creation
     const estado = data.loteId ? AnimalEstado.EN_LOTE : AnimalEstado.DISPONIBLE;
 

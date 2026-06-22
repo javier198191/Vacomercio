@@ -1,11 +1,29 @@
 'use client';
 
 import React, { useState } from 'react';
+import { z } from 'zod';
 import { Tabs } from '../ui/Tabs';
 import { Button } from '../ui/Button';
 import { IndividualTab } from './IndividualTab';
 import { LoteTab } from './LoteTab';
 import { LocationDropdowns } from './LocationDropdowns';
+
+const individualSchema = z.object({
+  nombre: z.string().min(1, 'El nombre es requerido'),
+  arete: z.string().min(1, 'El número de arete es requerido'),
+  raza: z.enum(['BRAHMAN', 'GYR', 'ANGUS', 'CEBU', 'CRUZADO', 'NELORE', 'SIMMENTAL'], {
+    message: 'Seleccione una raza válida de la lista',
+  }),
+  tipo: z.enum(['NOVILLO', 'VACA', 'TORO'], {
+    message: 'Seleccione un tipo de ganado válido',
+  }),
+  peso: z.number({ message: 'El peso debe ser un número válido' })
+    .positive('El peso debe ser mayor a 0')
+    .lt(1500, 'El peso debe ser menor a 1500 kg (límite biológico)'),
+  precio: z.number({ message: 'El precio debe ser un número válido' })
+    .positive('El precio debe ser mayor a 0'),
+  foto_url: z.string().optional(),
+});
 
 const PUBLISH_TABS = [
   { id: 'individual', label: 'Publicar Individual' },
@@ -18,9 +36,10 @@ export const PublishForm: React.FC = () => {
   const [municipio, setMunicipio] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
 
   const [individualData, setIndividualData] = useState({
-    nombre: '', arete: '', raza: '', peso: '', precio: '', foto_url: '',
+    nombre: '', arete: '', raza: '', tipo: '', peso: '', precio: '', foto_url: '',
   });
 
   const [loteData, setLoteData] = useState({
@@ -38,14 +57,94 @@ export const PublishForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!departamento || !municipio) {
-      alert('Por favor seleccione departamento y municipio.');
+      setErrorMsg('Por favor seleccione departamento y municipio.');
       return;
     }
     setIsSubmitting(true);
-    // Simulate API call
-    await new Promise((r) => setTimeout(r, 1200));
-    setIsSubmitting(false);
-    setSuccessMsg('✅ Tu publicación fue enviada al marketplace. ¡Éxito!');
+    setSuccessMsg('');
+    setErrorMsg('');
+
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const TEMP_USER_ID = 'user-1';
+
+    try {
+      if (activeTab === 'individual') {
+        const parsedPeso = parseFloat(individualData.peso);
+        const parsedPrecio = parseFloat(individualData.precio);
+
+        // Pre-validate fields using zod schema
+        const validationResult = individualSchema.safeParse({
+          ...individualData,
+          peso: isNaN(parsedPeso) ? undefined : parsedPeso,
+          precio: isNaN(parsedPrecio) ? undefined : parsedPrecio,
+        });
+
+        if (!validationResult.success) {
+          const errors = validationResult.error.issues.map(err => err.message).join('\n');
+          throw new Error(errors);
+        }
+
+        const payload = {
+          nombre: individualData.nombre,
+          arete: individualData.arete,
+          raza: individualData.raza,
+          tipo: individualData.tipo,
+          peso: parsedPeso,
+          precio: parsedPrecio,
+          userId: TEMP_USER_ID,
+          foto_url: individualData.foto_url || undefined,
+        };
+
+        const res = await fetch(`${API_BASE_URL}/animals`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.message || 'Error al crear la publicación individual.');
+        }
+      } else {
+        const cantidad = parseInt(loteData.cantidad, 10);
+        const pesoPromedio = parseFloat(loteData.peso_promedio);
+        const pesoTotal = pesoPromedio * cantidad;
+        const precioBase = parseFloat(loteData.precio);
+        const precioFinal = loteData.tipo_precio === 'kilo' ? precioBase * pesoTotal : precioBase;
+
+        const payload = {
+          nombre: loteData.nombre,
+          cantidad,
+          peso_promedio: pesoPromedio,
+          peso_total: pesoTotal,
+          precio: precioFinal,
+          departamento,
+          municipio,
+          userId: TEMP_USER_ID,
+        };
+
+        const res = await fetch(`${API_BASE_URL}/lots`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.message || 'Error al crear la publicación por lote.');
+        }
+      }
+
+      setSuccessMsg('✅ Tu publicación fue enviada al marketplace. ¡Éxito!');
+      setIndividualData({ nombre: '', arete: '', raza: '', tipo: '', peso: '', precio: '', foto_url: '' });
+      setLoteData({ nombre: '', cantidad: '', peso_promedio: '', precio: '', tipo_precio: 'kilo' });
+      setDepartamento('');
+      setMunicipio('');
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Ocurrió un error inesperado.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -57,6 +156,12 @@ export const PublishForm: React.FC = () => {
       {successMsg && (
         <div className="mb-md bg-primary-fixed text-on-primary-fixed border border-primary rounded-lg p-md font-label-bold text-label-bold">
           {successMsg}
+        </div>
+      )}
+
+      {errorMsg && (
+        <div className="mb-md bg-error-container text-on-error-container border border-error rounded-lg p-md font-label-bold text-label-bold whitespace-pre-line">
+          ⚠️ {errorMsg}
         </div>
       )}
 

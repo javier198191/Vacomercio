@@ -97,32 +97,34 @@ export default function MarketplacePage() {
   const [items, setItems] = useState<FeedItem[]>(MOCK_ITEMS);
   const [loading, setLoading] = useState(false);
 
-  // Filter logic on the client side (replace with API call in production)
-  const applyFilters = useCallback(() => {
+  const fetchFeed = useCallback(async () => {
     setLoading(true);
-    let filtered = [...MOCK_ITEMS];
+    try {
+      const params = new URLSearchParams();
+      if (activeRegion) params.append('departamento', activeRegion);
+      if (activeTipo) params.append('tipo', activeTipo.toUpperCase());
+      if (activePriceCategory) params.append('priceCategory', activePriceCategory);
 
-    if (activeTipo) {
-      filtered = filtered.filter((i) => i.tipo === activeTipo);
-    }
-
-    if (activePriceCategory === 'LEVANTE') {
-      filtered = filtered.filter((i) => i.precio >= 800000 && i.precio <= 1500000);
-    } else if (activePriceCategory === 'COMERCIAL') {
-      filtered = filtered.filter((i) => i.precio >= 1500000 && i.precio <= 3500000);
-    } else if (activePriceCategory === 'ELITE') {
-      filtered = filtered.filter((i) => i.precio >= 5000000);
-    }
-
-    setTimeout(() => {
-      setItems(filtered);
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const res = await fetch(`${API_BASE_URL}/marketplace/feed?${params.toString()}`);
+      if (!res.ok) throw new Error('Network response was not ok');
+      const data: FeedItem[] = await res.json();
+      
+      const normalizedData = data.map((item: any) => ({
+        ...item,
+        tipo: item.tipo.toLowerCase() as 'individual' | 'lote'
+      }));
+      setItems(normalizedData);
+    } catch (error) {
+      console.error('Error fetching feed:', error);
+    } finally {
       setLoading(false);
-    }, 300);
+    }
   }, [activeRegion, activePriceCategory, activeTipo]);
 
   useEffect(() => {
-    applyFilters();
-  }, [applyFilters]);
+    fetchFeed();
+  }, [fetchFeed]);
 
   return (
     <>

@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  vacomercio-db:
+    image: postgres:15-alpine
+    container_name: vacomercio-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Montrealcasa4!_
+      POSTGRES_DB: postgres
+    ports:
+      - "8432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  vacomercio-api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile.dev
+    container_name: vacomercio-api
+    restart: always
+    ports:
+      - "8081:3001"
+    environment:
+      PORT: 3001
+      DATABASE_URL: "postgresql://postgres:Montrealcasa4!_@vacomercio-db:5432/postgres?schema=public"
+      DIRECT_URL: "postgresql://postgres:Montrealcasa4!_@vacomercio-db:5432/postgres?schema=public"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/api/node_modules
+      - /app/apps/web/node_modules
+      - /app/packages/shared/dist
+    depends_on:
+      vacomercio-db:
+        condition: service_healthy
+
+  vacomercio-web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile.dev
+    container_name: vacomercio-web
+    restart: always
+    ports:
+      - "8080:3000"
+    environment:
+      PORT: 3000
+      NEXT_PUBLIC_API_URL: "http://localhost:8081"
+      API_URL: "http://vacomercio-api:3001"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/api/node_modules
+      - /app/apps/web/node_modules
+      - /app/packages/shared/dist
+    depends_on:
+      - vacomercio-api
+
+volumes:
+  pgdata:

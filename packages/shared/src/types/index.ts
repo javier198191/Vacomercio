@@ -1,6 +1,8 @@
 export type UserTipo = 'GANADERO' | 'COMPRADOR';
 export type AnimalEstado = 'DISPONIBLE' | 'EN_LOTE' | 'VENDIDO';
 export type LotEstado = 'DISPONIBLE' | 'VENDIDO';
+export type AnimalRaza = 'BRAHMAN' | 'GYR' | 'ANGUS' | 'CEBU' | 'CRUZADO' | 'NELORE' | 'SIMMENTAL';
+export type AnimalTipo = 'NOVILLO' | 'VACA' | 'TORO';
 
 export interface User {
   id: string;
@@ -19,7 +21,8 @@ export interface Animal {
   id: string;
   nombre: string;
   arete: string;
-  raza: string;
+  raza: AnimalRaza;
+  tipo: AnimalTipo;
   peso: number;
   precio: number; // Will be mapped from Decimal representation as number/string
   estado: AnimalEstado;
