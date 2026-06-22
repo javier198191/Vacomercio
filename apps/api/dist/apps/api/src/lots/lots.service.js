@@ -49,8 +49,8 @@ let LotsService = class LotsService {
                 const dateStr = a.fecha_limite_retiro ? new Date(a.fecha_limite_retiro).toLocaleDateString() : 'fecha no especificada';
                 return `Animal ${a.nombre} (#${a.arete}) con medicamento ${a.medicamento_retiro || 'desconocido'} (límite: ${dateStr})`;
             }).join(', ');
-            throw new common_1.BadRequestException({
-                statusCode: 400,
+            throw new common_1.ForbiddenException({
+                statusCode: 403,
                 error: 'SanityCheckFailed',
                 message: `Advertencia de inocuidad: La creación de este lote ha sido bloqueada. Los siguientes animales tienen un periodo de carencia (retiro de medicamentos veterinarios) activo para consumo humano directo: ${details}`,
             });

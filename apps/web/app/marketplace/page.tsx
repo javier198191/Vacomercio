@@ -92,6 +92,9 @@ const MOCK_ITEMS: FeedItem[] = [
 
 export default function MarketplacePage() {
   const [activeRegion, setActiveRegion] = useState('');
+  const [activeDepartamento, setActiveDepartamento] = useState('');
+  const [activeMunicipio, setActiveMunicipio] = useState('');
+  const [activeRaza, setActiveRaza] = useState('');
   const [activePriceCategory, setActivePriceCategory] = useState('');
   const [activeTipo, setActiveTipo] = useState('');
   const [items, setItems] = useState<FeedItem[]>(MOCK_ITEMS);
@@ -101,7 +104,10 @@ export default function MarketplacePage() {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      if (activeRegion) params.append('departamento', activeRegion);
+      if (activeRegion) params.append('region', activeRegion);
+      if (activeDepartamento) params.append('departamento', activeDepartamento);
+      if (activeMunicipio) params.append('municipio', activeMunicipio);
+      if (activeRaza) params.append('raza', activeRaza);
       if (activeTipo) params.append('tipo', activeTipo.toUpperCase());
       if (activePriceCategory) params.append('priceCategory', activePriceCategory);
 
@@ -120,7 +126,7 @@ export default function MarketplacePage() {
     } finally {
       setLoading(false);
     }
-  }, [activeRegion, activePriceCategory, activeTipo]);
+  }, [activeRegion, activeDepartamento, activeMunicipio, activeRaza, activePriceCategory, activeTipo]);
 
   useEffect(() => {
     fetchFeed();
@@ -145,7 +151,20 @@ export default function MarketplacePage() {
 
         <FilterBar
           activeRegion={activeRegion}
-          onRegionChange={setActiveRegion}
+          onRegionChange={(region) => {
+            setActiveRegion(region);
+            setActiveDepartamento('');
+            setActiveMunicipio('');
+          }}
+          activeDepartamento={activeDepartamento}
+          onDepartamentoChange={(dept) => {
+            setActiveDepartamento(dept);
+            setActiveMunicipio('');
+          }}
+          activeMunicipio={activeMunicipio}
+          onMunicipioChange={setActiveMunicipio}
+          activeRaza={activeRaza}
+          onRazaChange={setActiveRaza}
           activePriceCategory={activePriceCategory}
           onPriceCategoryChange={setActivePriceCategory}
           activeTipo={activeTipo}

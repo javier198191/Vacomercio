@@ -24,7 +24,12 @@ let MarketplaceService = class MarketplaceService {
         const skip = (page - 1) * limit;
         let departmentsFilter = [];
         if (query.departamento) {
-            departmentsFilter = [query.departamento];
+            if (shared_1.REGIONS_MAPPING[query.departamento]) {
+                departmentsFilter = shared_1.REGIONS_MAPPING[query.departamento];
+            }
+            else {
+                departmentsFilter = [query.departamento];
+            }
         }
         else if (query.region && shared_1.REGIONS_MAPPING[query.region]) {
             departmentsFilter = shared_1.REGIONS_MAPPING[query.region];
@@ -48,13 +53,20 @@ let MarketplaceService = class MarketplaceService {
                 estado: client_1.AnimalEstado.DISPONIBLE,
                 loteId: null,
             };
-            if (departmentsFilter.length > 0) {
+            if (departmentsFilter.length > 0 || query.municipio) {
                 animalWhere.user = {
-                    departamento: { in: departmentsFilter },
+                    ...(departmentsFilter.length > 0 ? { departamento: { in: departmentsFilter } } : {}),
+                    ...(query.municipio ? { municipio: { equals: query.municipio, mode: 'insensitive' } } : {}),
                 };
             }
             if (priceFilter) {
                 animalWhere.precio = priceFilter;
+            }
+            if (query.raza) {
+                const breedUpper = query.raza.toUpperCase();
+                if (Object.values(client_1.AnimalRaza).includes(breedUpper)) {
+                    animalWhere.raza = breedUpper;
+                }
             }
             const animals = await this.prisma.animal.findMany({
                 where: animalWhere,
@@ -84,12 +96,15 @@ let MarketplaceService = class MarketplaceService {
                 });
             });
         }
-        if (!typeFilter || typeFilter === 'lote') {
+        if ((!typeFilter || typeFilter === 'lote') && !query.raza) {
             const lotWhere = {
                 estado: client_1.LotEstado.DISPONIBLE,
             };
             if (departmentsFilter.length > 0) {
                 lotWhere.departamento = { in: departmentsFilter };
+            }
+            if (query.municipio) {
+                lotWhere.municipio = { equals: query.municipio, mode: 'insensitive' };
             }
             if (priceFilter) {
                 lotWhere.precio = priceFilter;

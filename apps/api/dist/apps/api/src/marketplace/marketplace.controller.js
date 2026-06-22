@@ -19,9 +19,11 @@ let MarketplaceController = class MarketplaceController {
     constructor(marketplaceService) {
         this.marketplaceService = marketplaceService;
     }
-    getFeed(departamento, region, priceCategory, tipo, page, limit) {
+    getFeed(departamento, municipio, raza, region, priceCategory, tipo, page, limit) {
         return this.marketplaceService.getFeed({
             departamento,
+            municipio,
+            raza,
             region,
             priceCategory,
             tipo,
@@ -34,13 +36,15 @@ exports.MarketplaceController = MarketplaceController;
 __decorate([
     (0, common_1.Get)('feed'),
     __param(0, (0, common_1.Query)('departamento')),
-    __param(1, (0, common_1.Query)('region')),
-    __param(2, (0, common_1.Query)('priceCategory')),
-    __param(3, (0, common_1.Query)('tipo')),
-    __param(4, (0, common_1.Query)('page')),
-    __param(5, (0, common_1.Query)('limit')),
+    __param(1, (0, common_1.Query)('municipio')),
+    __param(2, (0, common_1.Query)('raza')),
+    __param(3, (0, common_1.Query)('region')),
+    __param(4, (0, common_1.Query)('priceCategory')),
+    __param(5, (0, common_1.Query)('tipo')),
+    __param(6, (0, common_1.Query)('page')),
+    __param(7, (0, common_1.Query)('limit')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String, String, String, String]),
+    __metadata("design:paramtypes", [String, String, String, String, String, String, String, String]),
     __metadata("design:returntype", void 0)
 ], MarketplaceController.prototype, "getFeed", null);
 exports.MarketplaceController = MarketplaceController = __decorate([

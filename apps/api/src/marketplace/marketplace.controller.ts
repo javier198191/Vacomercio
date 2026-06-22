@@ -8,6 +8,8 @@ export class MarketplaceController {
   @Get('feed')
   getFeed(
     @Query('departamento') departamento?: string,
+    @Query('municipio') municipio?: string,
+    @Query('raza') raza?: string,
     @Query('region') region?: string,
     @Query('priceCategory') priceCategory?: 'LEVANTE' | 'COMERCIAL' | 'ELITE',
     @Query('tipo') tipo?: 'individual' | 'lote',
@@ -16,6 +18,8 @@ export class MarketplaceController {
   ) {
     return this.marketplaceService.getFeed({
       departamento,
+      municipio,
+      raza,
       region,
       priceCategory,
       tipo,

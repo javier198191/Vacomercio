@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { REGIONS_MAPPING } from '@vacomercio/shared';
-import { AnimalEstado, LotEstado, Prisma } from '@prisma/client';
+import { AnimalEstado, LotEstado, Prisma, AnimalRaza } from '@prisma/client';
 
 export interface FeedQueryDto {
   departamento?: string;
+  municipio?: string;
+  raza?: string;
   region?: string;
   priceCategory?: 'LEVANTE' | 'COMERCIAL' | 'ELITE';
   tipo?: 'individual' | 'lote';
@@ -24,7 +26,11 @@ export class MarketplaceService {
     // 1. Resolve Location (region / department) filter
     let departmentsFilter: string[] = [];
     if (query.departamento) {
-      departmentsFilter = [query.departamento];
+      if (REGIONS_MAPPING[query.departamento]) {
+        departmentsFilter = REGIONS_MAPPING[query.departamento];
+      } else {
+        departmentsFilter = [query.departamento];
+      }
     } else if (query.region && REGIONS_MAPPING[query.region]) {
       departmentsFilter = REGIONS_MAPPING[query.region];
     }
@@ -51,13 +57,20 @@ export class MarketplaceService {
         loteId: null, // Only individual ones
       };
 
-      if (departmentsFilter.length > 0) {
+      if (departmentsFilter.length > 0 || query.municipio) {
         animalWhere.user = {
-          departamento: { in: departmentsFilter },
+          ...(departmentsFilter.length > 0 ? { departamento: { in: departmentsFilter } } : {}),
+          ...(query.municipio ? { municipio: { equals: query.municipio, mode: 'insensitive' } } : {}),
         };
       }
       if (priceFilter) {
         animalWhere.precio = priceFilter;
+      }
+      if (query.raza) {
+        const breedUpper = query.raza.toUpperCase() as AnimalRaza;
+        if (Object.values(AnimalRaza).includes(breedUpper)) {
+          animalWhere.raza = breedUpper;
+        }
       }
 
       const animals = await this.prisma.animal.findMany({
@@ -91,14 +104,17 @@ export class MarketplaceService {
       });
     }
 
-    // 4. Query Lots if 'lote' or not specified
-    if (!typeFilter || typeFilter === 'lote') {
+    // 4. Query Lots if 'lote' or not specified (and no raza filter is active, since lots don't have a single breed)
+    if ((!typeFilter || typeFilter === 'lote') && !query.raza) {
       const lotWhere: Prisma.LotWhereInput = {
         estado: LotEstado.DISPONIBLE,
       };
 
       if (departmentsFilter.length > 0) {
         lotWhere.departamento = { in: departmentsFilter };
+      }
+      if (query.municipio) {
+        lotWhere.municipio = { equals: query.municipio, mode: 'insensitive' };
       }
       if (priceFilter) {
         lotWhere.precio = priceFilter;
