@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { AnimalsService } from './animals.service';
 import { CreateAnimalDto } from './dto/create-animal.dto';
 import { UpdateAnimalDto } from './dto/update-animal.dto';
@@ -8,8 +9,12 @@ export class AnimalsController {
   constructor(private readonly animalsService: AnimalsService) {}
 
   @Post()
-  create(@Body() createAnimalDto: CreateAnimalDto) {
-    return this.animalsService.create(createAnimalDto);
+  @UseInterceptors(FileInterceptor('file'))
+  create(
+    @Body() createAnimalDto: CreateAnimalDto,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.animalsService.create(createAnimalDto, file);
   }
 
   @Get()

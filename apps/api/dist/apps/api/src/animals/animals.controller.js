@@ -14,6 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AnimalsController = void 0;
 const common_1 = require("@nestjs/common");
+const platform_express_1 = require("@nestjs/platform-express");
 const animals_service_1 = require("./animals.service");
 const create_animal_dto_1 = require("./dto/create-animal.dto");
 const update_animal_dto_1 = require("./dto/update-animal.dto");
@@ -21,8 +22,8 @@ let AnimalsController = class AnimalsController {
     constructor(animalsService) {
         this.animalsService = animalsService;
     }
-    create(createAnimalDto) {
-        return this.animalsService.create(createAnimalDto);
+    create(createAnimalDto, file) {
+        return this.animalsService.create(createAnimalDto, file);
     }
     findAll() {
         return this.animalsService.findAll();
@@ -40,9 +41,11 @@ let AnimalsController = class AnimalsController {
 exports.AnimalsController = AnimalsController;
 __decorate([
     (0, common_1.Post)(),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file')),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.UploadedFile)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_animal_dto_1.CreateAnimalDto]),
+    __metadata("design:paramtypes", [create_animal_dto_1.CreateAnimalDto, Object]),
     __metadata("design:returntype", void 0)
 ], AnimalsController.prototype, "create", null);
 __decorate([
