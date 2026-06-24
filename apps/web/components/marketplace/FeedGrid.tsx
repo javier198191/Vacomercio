@@ -24,7 +24,7 @@ export const FeedGrid: React.FC<FeedGridProps> = ({ items, loading = false }) =>
         <span className="material-symbols-outlined text-[64px] text-outline mb-sm">agriculture</span>
         <h3 className="text-headline-md font-headline-md text-on-surface mb-xs">No se encontraron resultados</h3>
         <p className="text-body-md font-body-md text-on-surface-variant max-w-md mx-auto">
-          Prueba cambiando los filtros de región, categorías de precio, o tipo de publicación.
+          No se encontraron resultados para tu búsqueda. Intenta cambiando los filtros o la ubicación.
         </p>
       </div>
     );

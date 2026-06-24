@@ -100,18 +100,34 @@ export default function MarketplacePage() {
   const [items, setItems] = useState<FeedItem[]>(MOCK_ITEMS);
   const [loading, setLoading] = useState(false);
 
-  const fetchFeed = useCallback(async () => {
+  const fetchFeed = useCallback(async (customFilters?: {
+    region?: string;
+    departamento?: string;
+    municipio?: string;
+    raza?: string;
+    priceCategory?: string;
+    tipo?: string;
+  }) => {
     setLoading(true);
     try {
-      const params = new URLSearchParams();
-      if (activeRegion) params.append('region', activeRegion);
-      if (activeDepartamento) params.append('departamento', activeDepartamento);
-      if (activeMunicipio) params.append('municipio', activeMunicipio);
-      if (activeRaza) params.append('raza', activeRaza);
-      if (activeTipo) params.append('tipo', activeTipo.toUpperCase());
-      if (activePriceCategory) params.append('priceCategory', activePriceCategory);
+      const filters = customFilters || {
+        region: activeRegion,
+        departamento: activeDepartamento,
+        municipio: activeMunicipio,
+        raza: activeRaza,
+        priceCategory: activePriceCategory,
+        tipo: activeTipo,
+      };
 
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const params = new URLSearchParams();
+      if (filters.region) params.append('region', filters.region);
+      if (filters.departamento) params.append('departamento', filters.departamento);
+      if (filters.municipio) params.append('municipio', filters.municipio);
+      if (filters.raza) params.append('raza', filters.raza);
+      if (filters.tipo) params.append('tipo', filters.tipo.toUpperCase());
+      if (filters.priceCategory) params.append('priceCategory', filters.priceCategory);
+
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081';
       const res = await fetch(`${API_BASE_URL}/marketplace/feed?${params.toString()}`);
       if (!res.ok) throw new Error('Network response was not ok');
       const data: FeedItem[] = await res.json();
@@ -130,7 +146,30 @@ export default function MarketplacePage() {
 
   useEffect(() => {
     fetchFeed();
-  }, [fetchFeed]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleApplyFilters = () => {
+    fetchFeed();
+  };
+
+  const handleClearFilters = () => {
+    setActiveRegion('');
+    setActiveDepartamento('');
+    setActiveMunicipio('');
+    setActiveRaza('');
+    setActivePriceCategory('');
+    setActiveTipo('');
+
+    fetchFeed({
+      region: '',
+      departamento: '',
+      municipio: '',
+      raza: '',
+      priceCategory: '',
+      tipo: '',
+    });
+  };
 
   return (
     <>
@@ -169,6 +208,8 @@ export default function MarketplacePage() {
           onPriceCategoryChange={setActivePriceCategory}
           activeTipo={activeTipo}
           onTipoChange={setActiveTipo}
+          onApplyFilters={handleApplyFilters}
+          onClearFilters={handleClearFilters}
         />
 
         <FeedGrid items={items} loading={loading} />

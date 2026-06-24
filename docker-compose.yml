@@ -1,4 +1,4 @@
-version: '3.8'
+
 
 services:
   vacomercio-db:
@@ -7,7 +7,7 @@ services:
     restart: always
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: Montrealcasa4!_
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: postgres
     ports:
       - "8432:5432"
@@ -29,8 +29,10 @@ services:
       - "8081:3001"
     environment:
       PORT: 3001
-      DATABASE_URL: "postgresql://postgres:Montrealcasa4!_@vacomercio-db:5432/postgres?schema=public"
-      DIRECT_URL: "postgresql://postgres:Montrealcasa4!_@vacomercio-db:5432/postgres?schema=public"
+      DATABASE_URL: "postgresql://postgres:${DB_PASSWORD}@vacomercio-db:5432/postgres?schema=public"
+      DIRECT_URL: "postgresql://postgres:${DB_PASSWORD}@vacomercio-db:5432/postgres?schema=public"
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_KEY: ${SUPABASE_KEY}
     volumes:
       - .:/app
       - /app/node_modules
@@ -53,6 +55,8 @@ services:
       PORT: 3000
       NEXT_PUBLIC_API_URL: "http://localhost:8081"
       API_URL: "http://vacomercio-api:3001"
+      NEXT_PUBLIC_SUPABASE_URL: ${SUPABASE_URL}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${SUPABASE_KEY}
     volumes:
       - .:/app
       - /app/node_modules

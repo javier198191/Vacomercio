@@ -36,7 +36,6 @@ export const DEPARTMENTS_LIST = [
   "Quindío",
   "Risaralda",
   "Sucre",
-  "Casanare",
   "Arauca",
   "Vichada"
 ];

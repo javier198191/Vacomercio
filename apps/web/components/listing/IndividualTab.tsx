@@ -15,6 +15,7 @@ interface IndividualTabProps {
     foto_url: string;
   };
   onChange: (field: string, value: string) => void;
+  onFileSelect: (file: File, previewUrl: string) => void;
 }
 
 const RAZAS_OPTIONS = [
@@ -33,24 +34,40 @@ const TIPOS_OPTIONS = [
   { value: 'TORO', label: 'Toro' },
 ];
 
-export const IndividualTab: React.FC<IndividualTabProps> = ({ formData, onChange }) => {
+export const IndividualTab: React.FC<IndividualTabProps> = ({ formData, onChange, onFileSelect }) => {
   return (
     <div className="space-y-gutter">
       {/* Photo Upload Area */}
-      <div className="border-2 border-dashed border-outline-variant rounded-lg p-lg text-center bg-surface-container hover:bg-surface-container-highest transition-colors cursor-pointer flex flex-col items-center justify-center min-h-[200px]">
-        <span className="material-symbols-outlined text-outline text-[48px] mb-sm">add_a_photo</span>
-        <p className="font-label-bold text-label-bold text-on-surface mb-xs">Subir foto del animal</p>
-        <p className="font-body-sm text-body-sm text-on-surface-variant">Formatos JPG, PNG (Max 5MB)</p>
+      <label className="relative border-2 border-dashed border-outline-variant rounded-lg p-lg text-center bg-surface-container hover:bg-surface-container-highest transition-colors cursor-pointer flex flex-col items-center justify-center min-h-[200px] overflow-hidden block">
+        {formData.foto_url ? (
+          <>
+            <img 
+              src={formData.foto_url} 
+              alt="Vista previa del animal" 
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white opacity-0 hover:opacity-100 transition-opacity">
+              <span className="material-symbols-outlined text-[40px] mb-xs">photo_camera</span>
+              <p className="font-label-bold text-label-bold">Cambiar Foto</p>
+            </div>
+          </>
+        ) : (
+          <>
+            <span className="material-symbols-outlined text-[48px] text-outline mb-sm">add_a_photo</span>
+            <p className="font-label-bold text-label-bold text-on-surface mb-xs">Subir foto del animal</p>
+            <p className="font-body-sm text-body-sm text-on-surface-variant">Formatos JPG, PNG (Max 5MB)</p>
+          </>
+        )}
         <input
           type="file"
-          accept="image/jpeg,image/png"
+          accept="image/*"
           className="hidden"
           onChange={(e) => {
             const file = e.target.files?.[0];
-            if (file) onChange('foto_url', URL.createObjectURL(file));
+            if (file) onFileSelect(file, URL.createObjectURL(file));
           }}
         />
-      </div>
+      </label>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-gutter">
         <Input

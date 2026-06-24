@@ -1,1 +1,6 @@
-{}
+{
+  "/page": "app/page.js",
+  "/publicar/page": "app/publicar/page.js",
+  "/lotes/armar/page": "app/lotes/armar/page.js",
+  "/marketplace/page": "app/marketplace/page.js"
+}

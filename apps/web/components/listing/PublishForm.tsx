@@ -37,6 +37,7 @@ export const PublishForm: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const [individualData, setIndividualData] = useState({
     nombre: '', arete: '', raza: '', tipo: '', peso: '', precio: '', foto_url: '',
@@ -64,7 +65,7 @@ export const PublishForm: React.FC = () => {
     setSuccessMsg('');
     setErrorMsg('');
 
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081';
     const TEMP_USER_ID = 'user-1';
 
     try {
@@ -84,21 +85,24 @@ export const PublishForm: React.FC = () => {
           throw new Error(errors);
         }
 
-        const payload = {
-          nombre: individualData.nombre,
-          arete: individualData.arete,
-          raza: individualData.raza,
-          tipo: individualData.tipo,
-          peso: parsedPeso,
-          precio: parsedPrecio,
-          userId: TEMP_USER_ID,
-          foto_url: individualData.foto_url || undefined,
-        };
+        const formData = new FormData();
+        formData.append('nombre', individualData.nombre);
+        formData.append('arete', individualData.arete);
+        formData.append('raza', individualData.raza);
+        formData.append('tipo', individualData.tipo);
+        formData.append('peso', parsedPeso.toString());
+        formData.append('precio', parsedPrecio.toString());
+        formData.append('userId', TEMP_USER_ID);
+        
+        if (selectedFile) {
+          formData.append('file', selectedFile);
+        } else if (individualData.foto_url) {
+          formData.append('foto_url', individualData.foto_url);
+        }
 
         const res = await fetch(`${API_BASE_URL}/animals`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
+          body: formData,
         });
 
         if (!res.ok) {
@@ -137,6 +141,7 @@ export const PublishForm: React.FC = () => {
 
       setSuccessMsg('✅ Tu publicación fue enviada al marketplace. ¡Éxito!');
       setIndividualData({ nombre: '', arete: '', raza: '', tipo: '', peso: '', precio: '', foto_url: '' });
+      setSelectedFile(null);
       setLoteData({ nombre: '', cantidad: '', peso_promedio: '', precio: '', tipo_precio: 'kilo' });
       setDepartamento('');
       setMunicipio('');
@@ -179,7 +184,14 @@ export const PublishForm: React.FC = () => {
       >
         {/* Dynamic Tab Content */}
         {activeTab === 'individual' ? (
-          <IndividualTab formData={individualData} onChange={handleIndividualChange} />
+          <IndividualTab 
+            formData={individualData} 
+            onChange={handleIndividualChange} 
+            onFileSelect={(file, previewUrl) => {
+              setSelectedFile(file);
+              handleIndividualChange('foto_url', previewUrl);
+            }}
+          />
         ) : (
           <LoteTab formData={loteData} onChange={handleLoteChange} />
         )}

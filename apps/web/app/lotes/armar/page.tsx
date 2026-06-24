@@ -7,7 +7,7 @@ import { SelectionPanel } from '@/components/lot-builder/SelectionPanel';
 import { LotSummaryBar } from '@/components/lot-builder/LotSummaryBar';
 import { LocationDropdowns } from '@/components/listing/LocationDropdowns';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081';
 const TEMP_USER_ID = 'user-1';
 
 export default function LotesArmarPage() {

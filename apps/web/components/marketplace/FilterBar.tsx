@@ -14,6 +14,8 @@ interface FilterBarProps {
   onPriceCategoryChange: (category: string) => void;
   activeTipo: string;
   onTipoChange: (tipo: string) => void;
+  onApplyFilters: () => void;
+  onClearFilters: () => void;
 }
 
 const RAZAS = ['BRAHMAN', 'GYR', 'ANGUS', 'CEBU', 'CRUZADO', 'NELORE', 'SIMMENTAL'];
@@ -31,6 +33,8 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   onPriceCategoryChange,
   activeTipo,
   onTipoChange,
+  onApplyFilters,
+  onClearFilters,
 }) => {
   // Determine list of departments to display
   const departments = activeRegion 
@@ -168,6 +172,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           <label className="block text-label-sm font-label-sm text-on-surface-variant mb-xs">Tipo de Publicación</label>
           <div className="flex bg-surface-bright p-[3px] rounded-lg border border-outline-variant min-h-[48px] items-center w-max">
             <button
+              type="button"
               onClick={() => onTipoChange('')}
               className={`px-md py-xs rounded-md font-label-bold text-label-bold transition-all ${
                 activeTipo === ''
@@ -178,6 +183,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               Todos
             </button>
             <button
+              type="button"
               onClick={() => onTipoChange('individual')}
               className={`px-md py-xs rounded-md font-label-bold text-label-bold transition-all ${
                 activeTipo === 'individual'
@@ -188,6 +194,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               Individual
             </button>
             <button
+              type="button"
               onClick={() => onTipoChange('lote')}
               className={`px-md py-xs rounded-md font-label-bold text-label-bold transition-all ${
                 activeTipo === 'lote'
@@ -199,7 +206,26 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             </button>
           </div>
         </div>
+      </div>
 
+      {/* Row 3: Action Buttons */}
+      <div className="flex flex-col sm:flex-row gap-md sm:justify-end mt-xs pt-md border-t border-outline-variant">
+        <button
+          type="button"
+          onClick={onClearFilters}
+          className="flex items-center justify-center gap-xs px-lg py-md rounded-lg font-label-bold text-label-bold border border-outline-variant bg-surface-bright text-on-surface hover:bg-surface-container transition-all min-h-[48px]"
+        >
+          <span className="material-symbols-outlined text-[20px]">restart_alt</span>
+          Limpiar Filtros
+        </button>
+        <button
+          type="button"
+          onClick={onApplyFilters}
+          className="flex items-center justify-center gap-xs px-xl py-md rounded-lg font-label-bold text-label-bold bg-primary text-on-primary hover:opacity-90 shadow-md hover:shadow-lg transition-all min-h-[48px]"
+        >
+          <span className="material-symbols-outlined text-[20px]">search</span>
+          Buscar / Aplicar Filtros
+        </button>
       </div>
     </section>
   );
