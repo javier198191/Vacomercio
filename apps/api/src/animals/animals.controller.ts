@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFiles, BadRequestException } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { AnimalsService } from './animals.service';
 import { CreateAnimalDto } from './dto/create-animal.dto';
 import { UpdateAnimalDto } from './dto/update-animal.dto';
@@ -9,12 +9,15 @@ export class AnimalsController {
   constructor(private readonly animalsService: AnimalsService) {}
 
   @Post()
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FilesInterceptor('files', 5))
   create(
     @Body() createAnimalDto: CreateAnimalDto,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFiles() files: Express.Multer.File[],
   ) {
-    return this.animalsService.create(createAnimalDto, file);
+    if (!files || files.length === 0) {
+      throw new BadRequestException('Debe subir al menos una foto obligatoriamente para poder publicar.');
+    }
+    return this.animalsService.create(createAnimalDto, files);
   }
 
   @Get()

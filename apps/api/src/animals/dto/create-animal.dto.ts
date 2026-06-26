@@ -29,6 +29,12 @@ export class CreateAnimalDto {
   @IsString()
   userId!: string;
 
+  @IsString()
+  departamento!: string;
+
+  @IsString()
+  municipio!: string;
+
   @IsOptional()
   @IsString()
   foto_url?: string;

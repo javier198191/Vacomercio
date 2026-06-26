@@ -1,6 +1,6 @@
 {
-  "/page": "app/page.js",
-  "/publicar/page": "app/publicar/page.js",
+  "/marketplace/page": "app/marketplace/page.js",
+  "/producto/[id]/page": "app/producto/[id]/page.js",
   "/lotes/armar/page": "app/lotes/armar/page.js",
-  "/marketplace/page": "app/marketplace/page.js"
+  "/publicar/page": "app/publicar/page.js"
 }

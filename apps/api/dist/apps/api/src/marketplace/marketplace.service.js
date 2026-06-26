@@ -53,11 +53,11 @@ let MarketplaceService = class MarketplaceService {
                 estado: client_1.AnimalEstado.DISPONIBLE,
                 loteId: null,
             };
-            if (departmentsFilter.length > 0 || query.municipio) {
-                animalWhere.user = {
-                    ...(departmentsFilter.length > 0 ? { departamento: { in: departmentsFilter } } : {}),
-                    ...(query.municipio ? { municipio: { equals: query.municipio, mode: 'insensitive' } } : {}),
-                };
+            if (departmentsFilter.length > 0) {
+                animalWhere.departamento = { in: departmentsFilter };
+            }
+            if (query.municipio) {
+                animalWhere.municipio = { equals: query.municipio, mode: 'insensitive' };
             }
             if (priceFilter) {
                 animalWhere.precio = priceFilter;
@@ -85,8 +85,8 @@ let MarketplaceService = class MarketplaceService {
                     peso: a.peso,
                     precio: Number(a.precio),
                     foto_url: a.foto_url,
-                    departamento: a.user.departamento,
-                    municipio: a.user.municipio,
+                    departamento: a.departamento,
+                    municipio: a.municipio,
                     createdAt: a.createdAt,
                     user: {
                         nombre: a.user.nombre,

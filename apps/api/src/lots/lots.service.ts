@@ -2,10 +2,75 @@ import { Injectable, BadRequestException, NotFoundException, ForbiddenException 
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateLotDto } from './dto/create-lot.dto';
 import { AnimalEstado, LotEstado } from '@prisma/client';
+import { createClient } from '@supabase/supabase-js';
+import * as ws from 'ws';
+
+// Safely extract the WebSocket constructor whether esModuleInterop is enabled or not
+const WebSocketConstructor = (ws as any).default || ws;
+
+if (typeof global !== 'undefined' && !global.WebSocket) {
+  (global as any).WebSocket = WebSocketConstructor;
+}
 
 @Injectable()
 export class LotsService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async create(createLotDto: CreateLotDto, files: Express.Multer.File[]) {
+    const { nombre, cantidad, peso_promedio, peso_total, precio, departamento, municipio, userId } = createLotDto;
+
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_KEY;
+
+    if (!supabaseUrl || !supabaseKey) {
+      throw new BadRequestException('Supabase credentials are not configured. Please set SUPABASE_URL and SUPABASE_KEY.');
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    const urls: string[] = [];
+
+    for (const file of files) {
+      const uniqueName = `${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9.]/g, '')}`;
+      
+      const { data: uploadData, error } = await supabase.storage
+        .from('animales')
+        .upload(uniqueName, file.buffer, {
+          contentType: file.mimetype,
+        });
+
+      if (error) {
+        throw new BadRequestException(`Error al subir la imagen a Supabase: ${error.message}`);
+      }
+
+      const { data: urlData } = supabase.storage
+        .from('animales')
+        .getPublicUrl(uniqueName);
+
+      urls.push(urlData.publicUrl);
+    }
+
+    const foto_url = urls.join(',');
+
+    const parsedCantidad = Number(cantidad);
+    const parsedPesoPromedio = Number(peso_promedio);
+    const parsedPesoTotal = Number(peso_total);
+    const parsedPrecio = Number(precio);
+
+    return this.prisma.lot.create({
+      data: {
+        nombre,
+        cantidad: parsedCantidad,
+        peso_promedio: parsedPesoPromedio,
+        peso_total: parsedPesoTotal,
+        precio: parsedPrecio,
+        estado: LotEstado.DISPONIBLE,
+        foto_url,
+        departamento,
+        municipio,
+        userId,
+      },
+    });
+  }
 
   async createDynamic(createLotDto: CreateLotDto) {
     const { animalIds, nombre, precio, departamento, municipio, userId, foto_url } = createLotDto;

@@ -22,8 +22,11 @@ let AnimalsController = class AnimalsController {
     constructor(animalsService) {
         this.animalsService = animalsService;
     }
-    create(createAnimalDto, file) {
-        return this.animalsService.create(createAnimalDto, file);
+    create(createAnimalDto, files) {
+        if (!files || files.length === 0) {
+            throw new common_1.BadRequestException('Debe subir al menos una foto obligatoriamente para poder publicar.');
+        }
+        return this.animalsService.create(createAnimalDto, files);
     }
     findAll() {
         return this.animalsService.findAll();
@@ -41,11 +44,11 @@ let AnimalsController = class AnimalsController {
 exports.AnimalsController = AnimalsController;
 __decorate([
     (0, common_1.Post)(),
-    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file')),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FilesInterceptor)('files', 5)),
     __param(0, (0, common_1.Body)()),
-    __param(1, (0, common_1.UploadedFile)()),
+    __param(1, (0, common_1.UploadedFiles)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_animal_dto_1.CreateAnimalDto, Object]),
+    __metadata("design:paramtypes", [create_animal_dto_1.CreateAnimalDto, Array]),
     __metadata("design:returntype", void 0)
 ], AnimalsController.prototype, "create", null);
 __decorate([

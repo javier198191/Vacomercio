@@ -17,11 +17,11 @@ if (typeof global !== 'undefined' && !global.WebSocket) {
 export class AnimalsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(createAnimalDto: CreateAnimalDto, file?: Express.Multer.File) {
+  async create(createAnimalDto: CreateAnimalDto, files: Express.Multer.File[]) {
     const parsedPeso = Number(createAnimalDto.peso);
     const parsedPrecio = Number(createAnimalDto.precio);
 
-    const { fecha_limite_retiro, precio, peso, ...data } = createAnimalDto;
+    const { fecha_limite_retiro, precio, peso, departamento, municipio, ...data } = createAnimalDto;
     
     // Check if an animal with the same arete already exists
     const existing = await this.prisma.animal.findFirst({
@@ -31,18 +31,17 @@ export class AnimalsService {
       throw new ConflictException('El número de arete ya se encuentra registrado');
     }
 
-    let foto_url = createAnimalDto.foto_url;
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_KEY;
 
-    if (file) {
-      const supabaseUrl = process.env.SUPABASE_URL;
-      const supabaseKey = process.env.SUPABASE_KEY;
+    if (!supabaseUrl || !supabaseKey) {
+      throw new BadRequestException('Supabase credentials are not configured. Please set SUPABASE_URL and SUPABASE_KEY.');
+    }
 
-      if (!supabaseUrl || !supabaseKey) {
-        throw new BadRequestException('Supabase credentials are not configured. Please set SUPABASE_URL and SUPABASE_KEY.');
-      }
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    const urls: string[] = [];
 
-      const supabase = createClient(supabaseUrl, supabaseKey);
-
+    for (const file of files) {
       const uniqueName = `${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9.]/g, '')}`;
       
       const { data: uploadData, error } = await supabase.storage
@@ -59,8 +58,10 @@ export class AnimalsService {
         .from('animales')
         .getPublicUrl(uniqueName);
 
-      foto_url = urlData.publicUrl;
+      urls.push(urlData.publicUrl);
     }
+
+    const foto_url = urls.join(',');
 
     // Automatically transition to EN_LOTE if loteId is provided during creation
     const estado = data.loteId ? AnimalEstado.EN_LOTE : AnimalEstado.DISPONIBLE;
@@ -70,6 +71,8 @@ export class AnimalsService {
         ...data,
         peso: parsedPeso,
         precio: parsedPrecio,
+        departamento,
+        municipio,
         estado,
         foto_url,
         fecha_limite_retiro: fecha_limite_retiro ? new Date(fecha_limite_retiro) : null,

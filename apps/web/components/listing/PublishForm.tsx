@@ -37,10 +37,11 @@ export const PublishForm: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [individualFiles, setIndividualFiles] = useState<File[]>([]);
+  const [loteFiles, setLoteFiles] = useState<File[]>([]);
 
   const [individualData, setIndividualData] = useState({
-    nombre: '', arete: '', raza: '', tipo: '', peso: '', precio: '', foto_url: '',
+    nombre: '', arete: '', raza: '', tipo: '', peso: '', precio: '',
   });
 
   const [loteData, setLoteData] = useState({
@@ -57,6 +58,13 @@ export const PublishForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const filesToSubmit = activeTab === 'individual' ? individualFiles : loteFiles;
+    if (filesToSubmit.length === 0) {
+      setErrorMsg('Es obligatorio subir al menos una foto para publicar.');
+      return;
+    }
+
     if (!departamento || !municipio) {
       setErrorMsg('Por favor seleccione departamento y municipio.');
       return;
@@ -93,12 +101,12 @@ export const PublishForm: React.FC = () => {
         formData.append('peso', parsedPeso.toString());
         formData.append('precio', parsedPrecio.toString());
         formData.append('userId', TEMP_USER_ID);
+        formData.append('departamento', departamento);
+        formData.append('municipio', municipio);
         
-        if (selectedFile) {
-          formData.append('file', selectedFile);
-        } else if (individualData.foto_url) {
-          formData.append('foto_url', individualData.foto_url);
-        }
+        individualFiles.forEach((file) => {
+          formData.append('files', file);
+        });
 
         const res = await fetch(`${API_BASE_URL}/animals`, {
           method: 'POST',
@@ -116,21 +124,23 @@ export const PublishForm: React.FC = () => {
         const precioBase = parseFloat(loteData.precio);
         const precioFinal = loteData.tipo_precio === 'kilo' ? precioBase * pesoTotal : precioBase;
 
-        const payload = {
-          nombre: loteData.nombre,
-          cantidad,
-          peso_promedio: pesoPromedio,
-          peso_total: pesoTotal,
-          precio: precioFinal,
-          departamento,
-          municipio,
-          userId: TEMP_USER_ID,
-        };
+        const formData = new FormData();
+        formData.append('nombre', loteData.nombre);
+        formData.append('cantidad', cantidad.toString());
+        formData.append('peso_promedio', pesoPromedio.toString());
+        formData.append('peso_total', pesoTotal.toString());
+        formData.append('precio', precioFinal.toString());
+        formData.append('departamento', departamento);
+        formData.append('municipio', municipio);
+        formData.append('userId', TEMP_USER_ID);
+
+        loteFiles.forEach((file) => {
+          formData.append('files', file);
+        });
 
         const res = await fetch(`${API_BASE_URL}/lots`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
+          body: formData,
         });
 
         if (!res.ok) {
@@ -140,9 +150,10 @@ export const PublishForm: React.FC = () => {
       }
 
       setSuccessMsg('✅ Tu publicación fue enviada al marketplace. ¡Éxito!');
-      setIndividualData({ nombre: '', arete: '', raza: '', tipo: '', peso: '', precio: '', foto_url: '' });
-      setSelectedFile(null);
+      setIndividualData({ nombre: '', arete: '', raza: '', tipo: '', peso: '', precio: '' });
+      setIndividualFiles([]);
       setLoteData({ nombre: '', cantidad: '', peso_promedio: '', precio: '', tipo_precio: 'kilo' });
+      setLoteFiles([]);
       setDepartamento('');
       setMunicipio('');
     } catch (err: any) {
@@ -187,13 +198,16 @@ export const PublishForm: React.FC = () => {
           <IndividualTab 
             formData={individualData} 
             onChange={handleIndividualChange} 
-            onFileSelect={(file, previewUrl) => {
-              setSelectedFile(file);
-              handleIndividualChange('foto_url', previewUrl);
-            }}
+            selectedFiles={individualFiles}
+            onFilesChange={setIndividualFiles}
           />
         ) : (
-          <LoteTab formData={loteData} onChange={handleLoteChange} />
+          <LoteTab 
+            formData={loteData} 
+            onChange={handleLoteChange} 
+            selectedFiles={loteFiles}
+            onFilesChange={setLoteFiles}
+          />
         )}
 
         {/* Shared Location Section */}

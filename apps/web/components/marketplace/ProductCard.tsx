@@ -37,15 +37,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
   };
 
   const isLote = item.tipo === 'lote';
+  const mainImageUrl = item.foto_url ? item.foto_url.split(',')[0] : null;
 
   return (
     <article className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden flex flex-col hover:shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] transition-shadow duration-200">
       
       {/* Photo Container */}
       <div className="h-48 w-full relative bg-surface-container">
-        {item.foto_url ? (
+        {mainImageUrl ? (
           <img
-            src={item.foto_url}
+            src={mainImageUrl}
             alt={item.nombre}
             className="w-full h-full object-cover"
           />

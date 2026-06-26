@@ -97,7 +97,7 @@ export default function MarketplacePage() {
   const [activeRaza, setActiveRaza] = useState('');
   const [activePriceCategory, setActivePriceCategory] = useState('');
   const [activeTipo, setActiveTipo] = useState('');
-  const [items, setItems] = useState<FeedItem[]>(MOCK_ITEMS);
+  const [items, setItems] = useState<FeedItem[]>([]); // Inicia vacío
   const [loading, setLoading] = useState(false);
 
   const fetchFeed = useCallback(async (customFilters?: {
@@ -124,15 +124,14 @@ export default function MarketplacePage() {
       if (filters.departamento) params.append('departamento', filters.departamento);
       if (filters.municipio) params.append('municipio', filters.municipio);
       if (filters.raza) params.append('raza', filters.raza);
-      if (filters.tipo) params.append('tipo', filters.tipo.toUpperCase());
+      if (filters.tipo) params.append('tipo', filters.tipo);
       if (filters.priceCategory) params.append('priceCategory', filters.priceCategory);
 
       const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081';
       const res = await fetch(`${API_BASE_URL}/marketplace/feed?${params.toString()}`);
       if (!res.ok) throw new Error('Network response was not ok');
-      const data: FeedItem[] = await res.json();
-      
-      const normalizedData = data.map((item: any) => ({
+      const data = await res.json();
+      const normalizedData = data.items.map((item: any) => ({
         ...item,
         tipo: item.tipo.toLowerCase() as 'individual' | 'lote'
       }));

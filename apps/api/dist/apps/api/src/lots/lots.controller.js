@@ -14,11 +14,18 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LotsController = void 0;
 const common_1 = require("@nestjs/common");
+const platform_express_1 = require("@nestjs/platform-express");
 const lots_service_1 = require("./lots.service");
 const create_lot_dto_1 = require("./dto/create-lot.dto");
 let LotsController = class LotsController {
     constructor(lotsService) {
         this.lotsService = lotsService;
+    }
+    create(createLotDto, files) {
+        if (!files || files.length === 0) {
+            throw new common_1.BadRequestException('Debe subir al menos una foto obligatoriamente para poder publicar.');
+        }
+        return this.lotsService.create(createLotDto, files);
     }
     createDynamic(createLotDto) {
         return this.lotsService.createDynamic(createLotDto);
@@ -31,6 +38,15 @@ let LotsController = class LotsController {
     }
 };
 exports.LotsController = LotsController;
+__decorate([
+    (0, common_1.Post)(),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FilesInterceptor)('files', 5)),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.UploadedFiles)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [create_lot_dto_1.CreateLotDto, Array]),
+    __metadata("design:returntype", void 0)
+], LotsController.prototype, "create", null);
 __decorate([
     (0, common_1.Post)('create-dynamic'),
     __param(0, (0, common_1.Body)()),

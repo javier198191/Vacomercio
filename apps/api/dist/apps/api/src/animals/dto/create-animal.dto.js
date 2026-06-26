@@ -50,6 +50,14 @@ __decorate([
     __metadata("design:type", String)
 ], CreateAnimalDto.prototype, "userId", void 0);
 __decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateAnimalDto.prototype, "departamento", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateAnimalDto.prototype, "municipio", void 0);
+__decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
