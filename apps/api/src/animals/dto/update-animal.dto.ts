@@ -56,4 +56,12 @@ export class UpdateAnimalDto {
   @IsOptional()
   @IsDateString()
   fecha_limite_retiro?: string;
+
+  @IsOptional()
+  @IsString()
+  departamento?: string;
+
+  @IsOptional()
+  @IsString()
+  municipio?: string;
 }

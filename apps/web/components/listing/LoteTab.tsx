@@ -37,10 +37,10 @@ export const LoteTab: React.FC<LoteTabProps> = ({ formData, onChange, selectedFi
   };
 
   return (
-    <div className="space-y-gutter">
+    <div className="space-y-6">
       {/* Photos Section */}
-      <div className="space-y-sm">
-        <label className="font-label-bold text-label-bold text-on-surface">Fotos del lote (Mínimo 1, Máximo 5) *</label>
+      <div className="border border-vc-gray-mid rounded-xl p-6 bg-[#F9FAFB] space-y-4">
+        <h2 className="font-sans font-bold text-lg text-vc-black block border-b border-vc-gray-light pb-2">📸 1. Fotos del lote (Mínimo 1, Máximo 5) *</h2>
         
         {selectedFiles.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-sm mb-sm">
@@ -76,10 +76,10 @@ export const LoteTab: React.FC<LoteTabProps> = ({ formData, onChange, selectedFi
         )}
 
         {selectedFiles.length === 0 && (
-          <label className="relative border-2 border-dashed border-outline-variant rounded-lg p-lg text-center bg-surface-container hover:bg-surface-container-highest transition-colors cursor-pointer flex flex-col items-center justify-center min-h-[200px] overflow-hidden block">
-            <span className="material-symbols-outlined text-[48px] text-outline mb-sm">add_a_photo</span>
-            <p className="font-label-bold text-label-bold text-on-surface mb-xs">Subir fotos del lote (Obligatorio)</p>
-            <p className="font-body-sm text-body-sm text-on-surface-variant">Formatos JPG, PNG (Mínimo 1, Máximo 5)</p>
+          <label className="relative border-2 border-dashed border-vc-gray-mid rounded-lg p-6 text-center bg-vc-white hover:bg-vc-gray-light transition-colors cursor-pointer flex flex-col items-center justify-center min-h-[200px] overflow-hidden block">
+            <span className="material-symbols-outlined text-[48px] text-vc-gray-mid mb-2">add_a_photo</span>
+            <p className="font-sans font-bold text-vc-black mb-1">Haz clic para subir fotos del lote (Obligatorio)</p>
+            <p className="font-sans text-sm text-vc-gray-dark">Formatos JPG, PNG (Mínimo 1, Máximo 5)</p>
             <input
               type="file"
               accept="image/*"
@@ -91,13 +91,15 @@ export const LoteTab: React.FC<LoteTabProps> = ({ formData, onChange, selectedFi
         )}
         
         {selectedFiles.length > 0 && (
-          <p className="font-body-sm text-body-sm text-on-surface-variant">
+          <p className="font-sans text-sm text-vc-gray-dark">
             {selectedFiles.length} de 5 fotos seleccionadas.
           </p>
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+      <div className="border border-vc-gray-mid rounded-xl p-6 bg-[#F9FAFB]">
+        <h2 className="font-sans font-bold text-lg text-vc-black block border-b border-vc-gray-light pb-2 mb-6">📝 2. Información del Lote</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Nombre del lote - full row */}
         <div className="md:col-span-2">
           <Input
@@ -128,39 +130,39 @@ export const LoteTab: React.FC<LoteTabProps> = ({ formData, onChange, selectedFi
         />
 
         {/* Auto-calculated Total Weight */}
-        <div className="md:col-span-2 bg-surface-container rounded-lg p-sm border border-outline-variant flex items-center gap-md">
-          <span className="material-symbols-outlined text-primary text-[24px]">calculate</span>
+        <div className="md:col-span-2 bg-vc-white rounded-lg p-4 border border-vc-gray-mid flex items-center gap-4">
+          <span className="material-symbols-outlined text-vc-green text-[32px]">calculate</span>
           <div>
-            <p className="font-label-sm text-label-sm text-on-surface-variant">Peso Total Estimado (calculado)</p>
-            <p className="font-headline-md text-headline-md text-on-surface">{pesoTotal} kg</p>
+            <p className="font-sans text-sm text-vc-gray-dark font-bold">Peso Total Estimado (calculado)</p>
+            <p className="font-sans text-xl text-vc-black font-bold">{pesoTotal} kg</p>
           </div>
         </div>
 
         {/* Price Type Radio */}
-        <div className="md:col-span-2 flex flex-col gap-xs">
-          <label className="font-label-bold text-label-bold text-on-surface">Tipo de fijación de precio</label>
-          <div className="flex gap-md mt-xs">
-            <label className="flex items-center gap-xs cursor-pointer">
+        <div className="md:col-span-2 flex flex-col gap-2 bg-vc-white border border-vc-gray-light p-4 rounded-lg">
+          <label className="font-sans font-bold text-vc-black">Selecciona cómo deseas vender este lote:</label>
+          <div className="flex flex-col sm:flex-row gap-4 mt-2">
+            <label className="flex items-center gap-2 cursor-pointer bg-[#F9FAFB] border border-vc-gray-light p-3 rounded-lg flex-1 hover:border-vc-black transition-colors">
               <input
                 type="radio"
                 name="tipo_precio"
                 value="total"
                 checked={formData.tipo_precio === 'total'}
                 onChange={() => onChange('tipo_precio', 'total')}
-                className="text-primary focus:ring-primary h-4 w-4 border-outline-variant"
+                className="w-5 h-5 accent-vc-black"
               />
-              <span className="font-body-sm text-body-sm">Precio total del lote</span>
+              <span className="font-sans font-bold text-vc-black">Precio global (por todo el lote)</span>
             </label>
-            <label className="flex items-center gap-xs cursor-pointer">
+            <label className="flex items-center gap-2 cursor-pointer bg-[#F9FAFB] border border-vc-gray-light p-3 rounded-lg flex-1 hover:border-vc-black transition-colors">
               <input
                 type="radio"
                 name="tipo_precio"
                 value="kilo"
                 checked={formData.tipo_precio === 'kilo'}
                 onChange={() => onChange('tipo_precio', 'kilo')}
-                className="text-primary focus:ring-primary h-4 w-4 border-outline-variant"
+                className="w-5 h-5 accent-vc-black"
               />
-              <span className="font-body-sm text-body-sm">Precio por kg</span>
+              <span className="font-sans font-bold text-vc-black">Precio por kilogramo ($/kg)</span>
             </label>
           </div>
         </div>
@@ -177,6 +179,7 @@ export const LoteTab: React.FC<LoteTabProps> = ({ formData, onChange, selectedFi
             onChange={(e) => onChange('precio', e.target.value)}
           />
         </div>
+      </div>
       </div>
     </div>
   );

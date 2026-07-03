@@ -1,15 +1,17 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { Tabs } from '../ui/Tabs';
 import { Button } from '../ui/Button';
 import { IndividualTab } from './IndividualTab';
 import { LoteTab } from './LoteTab';
 import { LocationDropdowns } from './LocationDropdowns';
+import { apiFetch } from '../../lib/api';
 
 const individualSchema = z.object({
-  nombre: z.string().min(1, 'El nombre es requerido'),
+  nombre: z.string().optional(),
   arete: z.string().min(1, 'El número de arete es requerido'),
   raza: z.enum(['BRAHMAN', 'GYR', 'ANGUS', 'CEBU', 'CRUZADO', 'NELORE', 'SIMMENTAL'], {
     message: 'Seleccione una raza válida de la lista',
@@ -31,6 +33,7 @@ const PUBLISH_TABS = [
 ];
 
 export const PublishForm: React.FC = () => {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'individual' | 'lote'>('individual');
   const [departamento, setDepartamento] = useState('');
   const [municipio, setMunicipio] = useState('');
@@ -108,7 +111,7 @@ export const PublishForm: React.FC = () => {
           formData.append('files', file);
         });
 
-        const res = await fetch(`${API_BASE_URL}/animals`, {
+        const res = await apiFetch('/animals', {
           method: 'POST',
           body: formData,
         });
@@ -138,7 +141,7 @@ export const PublishForm: React.FC = () => {
           formData.append('files', file);
         });
 
-        const res = await fetch(`${API_BASE_URL}/lots`, {
+        const res = await apiFetch('/lots', {
           method: 'POST',
           body: formData,
         });
@@ -149,13 +152,17 @@ export const PublishForm: React.FC = () => {
         }
       }
 
-      setSuccessMsg('✅ Tu publicación fue enviada al marketplace. ¡Éxito!');
+      setSuccessMsg('✅ ¡Animal guardado en tu inventario! Puedes publicarlo en el Marketplace desde aquí.');
       setIndividualData({ nombre: '', arete: '', raza: '', tipo: '', peso: '', precio: '' });
       setIndividualFiles([]);
       setLoteData({ nombre: '', cantidad: '', peso_promedio: '', precio: '', tipo_precio: 'kilo' });
       setLoteFiles([]);
       setDepartamento('');
       setMunicipio('');
+      
+      setTimeout(() => {
+        router.push('/mis-lotes');
+      }, 1500);
     } catch (err: any) {
       setErrorMsg(err.message || 'Ocurrió un error inesperado.');
     } finally {

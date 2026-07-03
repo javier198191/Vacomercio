@@ -18,18 +18,21 @@ const platform_express_1 = require("@nestjs/platform-express");
 const animals_service_1 = require("./animals.service");
 const create_animal_dto_1 = require("./dto/create-animal.dto");
 const update_animal_dto_1 = require("./dto/update-animal.dto");
+const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
+const current_user_decorator_1 = require("../auth/decorators/current-user.decorator");
 let AnimalsController = class AnimalsController {
     constructor(animalsService) {
         this.animalsService = animalsService;
     }
-    create(createAnimalDto, files) {
+    create(createAnimalDto, files, user) {
         if (!files || files.length === 0) {
             throw new common_1.BadRequestException('Debe subir al menos una foto obligatoriamente para poder publicar.');
         }
+        createAnimalDto.userId = user.id;
         return this.animalsService.create(createAnimalDto, files);
     }
-    findAll() {
-        return this.animalsService.findAll();
+    findAll(user, loteId) {
+        return this.animalsService.findAll(user.id, loteId);
     }
     findOne(id) {
         return this.animalsService.findOne(id);
@@ -37,24 +40,32 @@ let AnimalsController = class AnimalsController {
     update(id, updateAnimalDto) {
         return this.animalsService.update(id, updateAnimalDto);
     }
+    updateMarketplaceStatus(id, en_marketplace, precio) {
+        return this.animalsService.updateMarketplaceStatus(id, en_marketplace, precio);
+    }
     remove(id) {
         return this.animalsService.remove(id);
     }
 };
 exports.AnimalsController = AnimalsController;
 __decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Post)(),
     (0, common_1.UseInterceptors)((0, platform_express_1.FilesInterceptor)('files', 5)),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.UploadedFiles)()),
+    __param(2, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_animal_dto_1.CreateAnimalDto, Array]),
+    __metadata("design:paramtypes", [create_animal_dto_1.CreateAnimalDto, Array, Object]),
     __metadata("design:returntype", void 0)
 ], AnimalsController.prototype, "create", null);
 __decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Get)(),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Query)('loteId')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], AnimalsController.prototype, "findAll", null);
 __decorate([
@@ -72,6 +83,15 @@ __decorate([
     __metadata("design:paramtypes", [String, update_animal_dto_1.UpdateAnimalDto]),
     __metadata("design:returntype", void 0)
 ], AnimalsController.prototype, "update", null);
+__decorate([
+    (0, common_1.Patch)(':id/marketplace'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)('en_marketplace')),
+    __param(2, (0, common_1.Body)('precio')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Boolean, Number]),
+    __metadata("design:returntype", void 0)
+], AnimalsController.prototype, "updateMarketplaceStatus", null);
 __decorate([
     (0, common_1.Delete)(':id'),
     __param(0, (0, common_1.Param)('id')),

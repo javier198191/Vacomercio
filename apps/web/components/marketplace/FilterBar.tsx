@@ -47,17 +47,17 @@ export const FilterBar: React.FC<FilterBarProps> = ({
     : [];
 
   return (
-    <section className="mb-lg bg-surface-container-lowest p-md rounded-xl border border-outline-variant shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] flex flex-col gap-md">
+    <section className="mb-8 bg-vc-white p-6 rounded-xl border border-vc-gray-light flex flex-col gap-6">
       
       {/* Row 1: Location Hierarchy */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-md">
         {/* Region Select */}
         <div className="flex flex-col">
-          <label className="block text-label-sm font-label-sm text-on-surface-variant mb-xs">Región</label>
+          <label className="block text-sm font-sans font-bold text-vc-black mb-1">Región</label>
           <select
             value={activeRegion}
             onChange={(e) => onRegionChange(e.target.value)}
-            className="w-full bg-surface-bright border border-outline-variant text-on-surface text-body-md font-body-md rounded-lg px-md py-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none min-h-[48px]"
+            className="w-full bg-vc-black border border-vc-black text-vc-white font-sans rounded-lg px-4 py-2 outline-none min-h-[48px]"
           >
             <option value="">Todas las regiones</option>
             {Object.keys(REGIONS_MAPPING).map((region) => (
@@ -70,11 +70,11 @@ export const FilterBar: React.FC<FilterBarProps> = ({
 
         {/* Departamento Select */}
         <div className="flex flex-col">
-          <label className="block text-label-sm font-label-sm text-on-surface-variant mb-xs">Departamento</label>
+          <label className="block text-sm font-sans font-bold text-vc-black mb-1">Departamento</label>
           <select
             value={activeDepartamento}
             onChange={(e) => onDepartamentoChange(e.target.value)}
-            className="w-full bg-surface-bright border border-outline-variant text-on-surface text-body-md font-body-md rounded-lg px-md py-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none min-h-[48px]"
+            className="w-full bg-vc-black border border-vc-black text-vc-white font-sans rounded-lg px-4 py-2 outline-none min-h-[48px]"
           >
             <option value="">Todos los departamentos</option>
             {departments.map((dept) => (
@@ -87,13 +87,13 @@ export const FilterBar: React.FC<FilterBarProps> = ({
 
         {/* Municipio Select */}
         <div className="flex flex-col">
-          <label className="block text-label-sm font-label-sm text-on-surface-variant mb-xs">Municipio</label>
+          <label className="block text-sm font-sans font-bold text-vc-black mb-1">Municipio</label>
           <select
             value={activeMunicipio}
             onChange={(e) => onMunicipioChange(e.target.value)}
             disabled={!activeDepartamento}
-            className={`w-full bg-surface-bright border border-outline-variant text-on-surface text-body-md font-body-md rounded-lg px-md py-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none min-h-[48px] ${
-              !activeDepartamento ? 'opacity-50 cursor-not-allowed bg-surface-container' : ''
+            className={`w-full bg-vc-black border border-vc-black text-vc-white font-sans rounded-lg px-4 py-2 outline-none min-h-[48px] ${
+              !activeDepartamento ? 'opacity-50 cursor-not-allowed' : ''
             }`}
           >
             <option value="">
@@ -108,18 +108,18 @@ export const FilterBar: React.FC<FilterBarProps> = ({
         </div>
       </div>
 
-      <hr className="border-outline-variant" />
+      <hr className="border-vc-gray-light" />
 
       {/* Row 2: Animal specific filters */}
       <div className="flex flex-col lg:flex-row gap-md items-start lg:items-center justify-between">
         
         {/* Breed (Raza) Select */}
         <div className="w-full lg:w-auto min-w-[200px]">
-          <label className="block text-label-sm font-label-sm text-on-surface-variant mb-xs">Raza (Solo Individuales)</label>
+          <label className="block text-sm font-sans font-bold text-vc-black mb-1">Raza (Solo Individuales)</label>
           <select
             value={activeRaza}
             onChange={(e) => onRazaChange(e.target.value)}
-            className="w-full bg-surface-bright border border-outline-variant text-on-surface text-body-md font-body-md rounded-lg px-md py-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none min-h-[48px]"
+            className="w-full bg-vc-black border border-vc-black text-vc-white font-sans rounded-lg px-4 py-2 outline-none min-h-[48px]"
           >
             <option value="">Todas las razas</option>
             {RAZAS.map((raza) => (
@@ -132,34 +132,34 @@ export const FilterBar: React.FC<FilterBarProps> = ({
 
         {/* Price Categories */}
         <div className="w-full lg:w-auto">
-          <label className="block text-label-sm font-label-sm text-on-surface-variant mb-xs">Categoría de Precio</label>
-          <div className="flex flex-wrap gap-xs">
+          <label className="block text-sm font-sans font-bold text-vc-black mb-1">Categoría de Precio</label>
+          <div className="flex flex-wrap gap-2">
             <button
               onClick={() => onPriceCategoryChange(activePriceCategory === 'LEVANTE' ? '' : 'LEVANTE')}
-              className={`font-label-bold text-label-bold rounded-lg px-md py-sm min-h-[48px] border transition-colors ${
+              className={`font-sans font-bold rounded-lg px-4 py-2 min-h-[48px] border transition-colors ${
                 activePriceCategory === 'LEVANTE'
-                  ? 'bg-primary text-on-primary border-primary'
-                  : 'bg-surface-bright text-on-surface border-outline-variant hover:bg-surface-container'
+                  ? 'bg-vc-white text-vc-black border-vc-black'
+                  : 'bg-vc-black text-vc-white border-vc-black hover:bg-vc-gray-dark'
               }`}
             >
               Levante/Cría ($800k–$1.5M)
             </button>
             <button
               onClick={() => onPriceCategoryChange(activePriceCategory === 'COMERCIAL' ? '' : 'COMERCIAL')}
-              className={`font-label-bold text-label-bold rounded-lg px-md py-sm min-h-[48px] border transition-colors ${
+              className={`font-sans font-bold rounded-lg px-4 py-2 min-h-[48px] border transition-colors ${
                 activePriceCategory === 'COMERCIAL'
-                  ? 'bg-primary text-on-primary border-primary'
-                  : 'bg-surface-bright text-on-surface border-outline-variant hover:bg-surface-container'
+                  ? 'bg-vc-white text-vc-black border-vc-black'
+                  : 'bg-vc-black text-vc-white border-vc-black hover:bg-vc-gray-dark'
               }`}
             >
               Comercial/Consumo ($1.5M–$3.5M)
             </button>
             <button
               onClick={() => onPriceCategoryChange(activePriceCategory === 'ELITE' ? '' : 'ELITE')}
-              className={`font-label-bold text-label-bold rounded-lg px-md py-sm min-h-[48px] border transition-colors ${
+              className={`font-sans font-bold rounded-lg px-4 py-2 min-h-[48px] border transition-colors ${
                 activePriceCategory === 'ELITE'
-                  ? 'bg-primary text-on-primary border-primary'
-                  : 'bg-surface-bright text-on-surface border-outline-variant hover:bg-surface-container'
+                  ? 'bg-vc-white text-vc-black border-vc-black'
+                  : 'bg-vc-black text-vc-white border-vc-black hover:bg-vc-gray-dark'
               }`}
             >
               Genética/Élite (+$5M)
@@ -169,15 +169,15 @@ export const FilterBar: React.FC<FilterBarProps> = ({
 
         {/* Type Filter (Individual vs Lote) */}
         <div className="w-full lg:w-auto">
-          <label className="block text-label-sm font-label-sm text-on-surface-variant mb-xs">Tipo de Publicación</label>
-          <div className="flex bg-surface-bright p-[3px] rounded-lg border border-outline-variant min-h-[48px] items-center w-max">
+          <label className="block text-sm font-sans font-bold text-vc-black mb-1">Tipo de Publicación</label>
+          <div className="flex bg-vc-black p-[3px] rounded-lg border border-vc-black min-h-[48px] items-center w-max">
             <button
               type="button"
               onClick={() => onTipoChange('')}
-              className={`px-md py-xs rounded-md font-label-bold text-label-bold transition-all ${
+              className={`px-4 py-1 rounded-md font-sans font-bold transition-all ${
                 activeTipo === ''
-                  ? 'bg-primary text-on-primary shadow-sm'
-                  : 'text-on-surface hover:text-primary'
+                  ? 'bg-vc-white text-vc-black'
+                  : 'text-[#CCCCCC] hover:text-vc-white'
               }`}
             >
               Todos
@@ -185,10 +185,10 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             <button
               type="button"
               onClick={() => onTipoChange('individual')}
-              className={`px-md py-xs rounded-md font-label-bold text-label-bold transition-all ${
+              className={`px-4 py-1 rounded-md font-sans font-bold transition-all ${
                 activeTipo === 'individual'
-                  ? 'bg-primary text-on-primary shadow-sm'
-                  : 'text-on-surface hover:text-primary'
+                  ? 'bg-vc-white text-vc-black'
+                  : 'text-[#CCCCCC] hover:text-vc-white'
               }`}
             >
               Individual
@@ -196,10 +196,10 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             <button
               type="button"
               onClick={() => onTipoChange('lote')}
-              className={`px-md py-xs rounded-md font-label-bold text-label-bold transition-all ${
+              className={`px-4 py-1 rounded-md font-sans font-bold transition-all ${
                 activeTipo === 'lote'
-                  ? 'bg-primary text-on-primary shadow-sm'
-                  : 'text-on-surface hover:text-primary'
+                  ? 'bg-vc-white text-vc-black'
+                  : 'text-[#CCCCCC] hover:text-vc-white'
               }`}
             >
               Lote
@@ -209,11 +209,11 @@ export const FilterBar: React.FC<FilterBarProps> = ({
       </div>
 
       {/* Row 3: Action Buttons */}
-      <div className="flex flex-col sm:flex-row gap-md sm:justify-end mt-xs pt-md border-t border-outline-variant">
+      <div className="flex flex-col sm:flex-row gap-4 sm:justify-end mt-2 pt-6 border-t border-vc-gray-light">
         <button
           type="button"
           onClick={onClearFilters}
-          className="flex items-center justify-center gap-xs px-lg py-md rounded-lg font-label-bold text-label-bold border border-outline-variant bg-surface-bright text-on-surface hover:bg-surface-container transition-all min-h-[48px]"
+          className="flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-sans font-bold border border-vc-black bg-vc-white text-vc-black hover:bg-vc-gray-light transition-all min-h-[48px]"
         >
           <span className="material-symbols-outlined text-[20px]">restart_alt</span>
           Limpiar Filtros
@@ -221,7 +221,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
         <button
           type="button"
           onClick={onApplyFilters}
-          className="flex items-center justify-center gap-xs px-xl py-md rounded-lg font-label-bold text-label-bold bg-primary text-on-primary hover:opacity-90 shadow-md hover:shadow-lg transition-all min-h-[48px]"
+          className="flex items-center justify-center gap-2 px-8 py-3 rounded-lg font-sans font-bold bg-vc-black text-vc-white hover:bg-vc-gray-dark transition-all min-h-[48px]"
         >
           <span className="material-symbols-outlined text-[20px]">search</span>
           Buscar / Aplicar Filtros

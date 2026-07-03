@@ -24,34 +24,39 @@ let LotsService = class LotsService {
         this.prisma = prisma;
     }
     async create(createLotDto, files) {
-        const { nombre, cantidad, peso_promedio, peso_total, precio, departamento, municipio, userId } = createLotDto;
-        const supabaseUrl = process.env.SUPABASE_URL;
-        const supabaseKey = process.env.SUPABASE_KEY;
-        if (!supabaseUrl || !supabaseKey) {
-            throw new common_1.BadRequestException('Supabase credentials are not configured. Please set SUPABASE_URL and SUPABASE_KEY.');
+        const { nombre, cantidad, peso_promedio, peso_total, precio, departamento, municipio, userId, categoria } = createLotDto;
+        if (!userId) {
+            throw new common_1.BadRequestException('userId is required');
         }
-        const supabase = (0, supabase_js_1.createClient)(supabaseUrl, supabaseKey);
         const urls = [];
-        for (const file of files) {
-            const uniqueName = `${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9.]/g, '')}`;
-            const { data: uploadData, error } = await supabase.storage
-                .from('animales')
-                .upload(uniqueName, file.buffer, {
-                contentType: file.mimetype,
-            });
-            if (error) {
-                throw new common_1.BadRequestException(`Error al subir la imagen a Supabase: ${error.message}`);
+        if (files && files.length > 0) {
+            const supabaseUrl = process.env.SUPABASE_URL;
+            const supabaseKey = process.env.SUPABASE_KEY;
+            if (!supabaseUrl || !supabaseKey) {
+                throw new common_1.BadRequestException('Supabase credentials are not configured. Please set SUPABASE_URL and SUPABASE_KEY.');
             }
-            const { data: urlData } = supabase.storage
-                .from('animales')
-                .getPublicUrl(uniqueName);
-            urls.push(urlData.publicUrl);
+            const supabase = (0, supabase_js_1.createClient)(supabaseUrl, supabaseKey);
+            for (const file of files) {
+                const uniqueName = `${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9.]/g, '')}`;
+                const { data: uploadData, error } = await supabase.storage
+                    .from('animales')
+                    .upload(uniqueName, file.buffer, {
+                    contentType: file.mimetype,
+                });
+                if (error) {
+                    throw new common_1.BadRequestException(`Error al subir la imagen a Supabase: ${error.message}`);
+                }
+                const { data: urlData } = supabase.storage
+                    .from('animales')
+                    .getPublicUrl(uniqueName);
+                urls.push(urlData.publicUrl);
+            }
         }
-        const foto_url = urls.join(',');
-        const parsedCantidad = Number(cantidad);
-        const parsedPesoPromedio = Number(peso_promedio);
-        const parsedPesoTotal = Number(peso_total);
-        const parsedPrecio = Number(precio);
+        const foto_url = urls.length > 0 ? urls.join(',') : (createLotDto.foto_url || null);
+        const parsedCantidad = cantidad !== undefined ? Number(cantidad) : 0;
+        const parsedPesoPromedio = peso_promedio !== undefined ? Number(peso_promedio) : 0;
+        const parsedPesoTotal = peso_total !== undefined ? Number(peso_total) : 0;
+        const parsedPrecio = precio !== undefined ? Number(precio) : 0;
         return this.prisma.lot.create({
             data: {
                 nombre,
@@ -61,6 +66,7 @@ let LotsService = class LotsService {
                 precio: parsedPrecio,
                 estado: client_1.LotEstado.DISPONIBLE,
                 foto_url,
+                categoria,
                 departamento,
                 municipio,
                 userId,
@@ -68,7 +74,10 @@ let LotsService = class LotsService {
         });
     }
     async createDynamic(createLotDto) {
-        const { animalIds, nombre, precio, departamento, municipio, userId, foto_url } = createLotDto;
+        const { animalIds, nombre, precio, departamento, municipio, userId, foto_url, categoria } = createLotDto;
+        if (!userId) {
+            throw new common_1.BadRequestException('userId is required');
+        }
         if (!animalIds || animalIds.length === 0) {
             throw new common_1.BadRequestException('Debe seleccionar al menos un animal para armar el lote.');
         }
@@ -120,6 +129,7 @@ let LotsService = class LotsService {
                     precio: finalPrice,
                     estado: client_1.LotEstado.DISPONIBLE,
                     foto_url,
+                    categoria,
                     departamento,
                     municipio,
                     userId,
@@ -140,8 +150,12 @@ let LotsService = class LotsService {
             });
         });
     }
-    async findAll() {
+    async findAll(userId) {
+        const where = {
+            userId,
+        };
         return this.prisma.lot.findMany({
+            where,
             include: {
                 animals: true,
                 user: true,
@@ -160,6 +174,151 @@ let LotsService = class LotsService {
             throw new common_1.NotFoundException(`Lote con ID ${id} no encontrado.`);
         }
         return lot;
+    }
+    async assignAnimals(id, animalIds) {
+        await this.prisma.animal.updateMany({
+            where: { id: { in: animalIds } },
+            data: {
+                loteId: id,
+                estado: client_1.AnimalEstado.EN_LOTE,
+            },
+        });
+        const animals = await this.prisma.animal.findMany({
+            where: { loteId: id },
+        });
+        const cantidad = animals.length;
+        const peso_total = animals.reduce((sum, a) => sum + a.peso, 0);
+        const peso_promedio = cantidad > 0 ? peso_total / cantidad : 0;
+        return this.prisma.lot.update({
+            where: { id },
+            data: {
+                cantidad,
+                peso_total,
+                peso_promedio,
+            },
+            include: { animals: true },
+        });
+    }
+    async updateMarketplaceStatus(id, en_marketplace, precio) {
+        await this.findOne(id);
+        const updateData = { en_marketplace };
+        if (precio !== undefined) {
+            updateData.precio = precio;
+        }
+        return this.prisma.lot.update({
+            where: { id },
+            data: updateData,
+        });
+    }
+    async update(id, updateLotDto) {
+        const lot = await this.findOne(id);
+        const { animalIds, nombre, precio, categoria, departamento, municipio, userId } = updateLotDto;
+        return this.prisma.$transaction(async (tx) => {
+            if (animalIds !== undefined) {
+                const currentAnimalIds = lot.animals.map(a => a.id);
+                const animalIdsToRemove = currentAnimalIds.filter(aid => !animalIds.includes(aid));
+                const animalIdsToAdd = animalIds.filter(aid => !currentAnimalIds.includes(aid));
+                if (animalIdsToAdd.length > 0) {
+                    const animalsToAdd = await tx.animal.findMany({
+                        where: {
+                            id: { in: animalIdsToAdd },
+                            userId: userId || lot.userId,
+                        },
+                    });
+                    if (animalsToAdd.length !== animalIdsToAdd.length) {
+                        throw new common_1.NotFoundException('Algunas vacas seleccionadas para añadir no existen o no pertenecen a este usuario.');
+                    }
+                    const unavailableAnimals = animalsToAdd.filter(a => a.estado !== client_1.AnimalEstado.DISPONIBLE);
+                    if (unavailableAnimals.length > 0) {
+                        const names = unavailableAnimals.map(a => `${a.nombre} (#${a.arete})`).join(', ');
+                        throw new common_1.BadRequestException(`Las siguientes vacas no están disponibles para loteo: ${names}`);
+                    }
+                    const now = new Date();
+                    const animalsWithWithdrawal = animalsToAdd.filter(animal => {
+                        if (animal.en_periodo_retiro)
+                            return true;
+                        if (animal.fecha_limite_retiro && new Date(animal.fecha_limite_retiro) > now)
+                            return true;
+                        return false;
+                    });
+                    if (animalsWithWithdrawal.length > 0) {
+                        const details = animalsWithWithdrawal.map(a => {
+                            const dateStr = a.fecha_limite_retiro ? new Date(a.fecha_limite_retiro).toLocaleDateString() : 'fecha no especificada';
+                            return `Animal ${a.nombre} (#${a.arete}) con medicamento ${a.medicamento_retiro || 'desconocido'} (límite: ${dateStr})`;
+                        }).join(', ');
+                        throw new common_1.ForbiddenException({
+                            statusCode: 403,
+                            error: 'SanityCheckFailed',
+                            message: `Advertencia de inocuidad: No se puede añadir estas vacas. Tienen periodo de carencia activo: ${details}`,
+                        });
+                    }
+                }
+                if (animalIdsToRemove.length > 0) {
+                    await tx.animal.updateMany({
+                        where: { id: { in: animalIdsToRemove } },
+                        data: {
+                            loteId: null,
+                            estado: client_1.AnimalEstado.DISPONIBLE,
+                        },
+                    });
+                }
+                if (animalIdsToAdd.length > 0) {
+                    await tx.animal.updateMany({
+                        where: { id: { in: animalIdsToAdd } },
+                        data: {
+                            loteId: id,
+                            estado: client_1.AnimalEstado.EN_LOTE,
+                        },
+                    });
+                }
+            }
+            const finalAnimals = await tx.animal.findMany({
+                where: { loteId: id },
+            });
+            const cantidad = finalAnimals.length;
+            const peso_total = finalAnimals.reduce((sum, a) => sum + a.peso, 0);
+            const peso_promedio = cantidad > 0 ? peso_total / cantidad : 0;
+            let finalPrice = Number(lot.precio);
+            if (precio !== undefined) {
+                finalPrice = Number(precio);
+            }
+            else if (animalIds !== undefined) {
+                finalPrice = finalAnimals.reduce((sum, a) => sum + Number(a.precio), 0);
+            }
+            const updateData = {};
+            if (nombre !== undefined)
+                updateData.nombre = nombre;
+            if (categoria !== undefined)
+                updateData.categoria = categoria;
+            if (departamento !== undefined)
+                updateData.departamento = departamento;
+            if (municipio !== undefined)
+                updateData.municipio = municipio;
+            updateData.precio = finalPrice;
+            updateData.cantidad = cantidad;
+            updateData.peso_total = peso_total;
+            updateData.peso_promedio = peso_promedio;
+            return tx.lot.update({
+                where: { id },
+                data: updateData,
+                include: { animals: true },
+            });
+        });
+    }
+    async remove(id) {
+        await this.findOne(id);
+        return this.prisma.$transaction(async (tx) => {
+            await tx.animal.updateMany({
+                where: { loteId: id },
+                data: {
+                    loteId: null,
+                    estado: client_1.AnimalEstado.DISPONIBLE,
+                },
+            });
+            return tx.lot.delete({
+                where: { id },
+            });
+        });
     }
 };
 exports.LotsService = LotsService;

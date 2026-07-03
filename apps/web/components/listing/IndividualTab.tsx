@@ -50,10 +50,10 @@ export const IndividualTab: React.FC<IndividualTabProps> = ({ formData, onChange
   };
 
   return (
-    <div className="space-y-gutter">
+    <div className="space-y-6">
       {/* Photos Section */}
-      <div className="space-y-sm">
-        <label className="font-label-bold text-label-bold text-on-surface">Fotos del animal (Mínimo 1, Máximo 5) *</label>
+      <div className="border border-vc-gray-mid rounded-xl p-6 bg-[#F9FAFB] space-y-4">
+        <h2 className="font-sans font-bold text-lg text-vc-black block border-b border-vc-gray-light pb-2">📸 1. Fotos del animal (Mínimo 1, Máximo 5) *</h2>
         
         {selectedFiles.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-sm mb-sm">
@@ -89,10 +89,10 @@ export const IndividualTab: React.FC<IndividualTabProps> = ({ formData, onChange
         )}
 
         {selectedFiles.length === 0 && (
-          <label className="relative border-2 border-dashed border-outline-variant rounded-lg p-lg text-center bg-surface-container hover:bg-surface-container-highest transition-colors cursor-pointer flex flex-col items-center justify-center min-h-[200px] overflow-hidden block">
-            <span className="material-symbols-outlined text-[48px] text-outline mb-sm">add_a_photo</span>
-            <p className="font-label-bold text-label-bold text-on-surface mb-xs">Subir fotos (Obligatorio)</p>
-            <p className="font-body-sm text-body-sm text-on-surface-variant">Formatos JPG, PNG (Mínimo 1, Máximo 5)</p>
+          <label className="relative border-2 border-dashed border-vc-gray-mid rounded-lg p-6 text-center bg-vc-white hover:bg-vc-gray-light transition-colors cursor-pointer flex flex-col items-center justify-center min-h-[200px] overflow-hidden block">
+            <span className="material-symbols-outlined text-[48px] text-vc-gray-mid mb-2">add_a_photo</span>
+            <p className="font-sans font-bold text-vc-black mb-1">Haz clic para subir fotos (Obligatorio)</p>
+            <p className="font-sans text-sm text-vc-gray-dark">Formatos JPG, PNG (Mínimo 1, Máximo 5)</p>
             <input
               type="file"
               accept="image/*"
@@ -104,15 +104,17 @@ export const IndividualTab: React.FC<IndividualTabProps> = ({ formData, onChange
         )}
         
         {selectedFiles.length > 0 && (
-          <p className="font-body-sm text-body-sm text-on-surface-variant">
+          <p className="font-sans text-sm text-vc-gray-dark">
             {selectedFiles.length} de 5 fotos seleccionadas.
           </p>
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+      <div className="border border-vc-gray-mid rounded-xl p-6 bg-[#F9FAFB]">
+        <h2 className="font-sans font-bold text-lg text-vc-black block border-b border-vc-gray-light pb-2 mb-6">📝 2. Información Básica</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Input
-          label="Nombre / Arete"
+          label="Nombre"
           id="nombre-individual"
           placeholder="Ej. Vaca Lola 001"
           value={formData.nombre}
@@ -168,6 +170,7 @@ export const IndividualTab: React.FC<IndividualTabProps> = ({ formData, onChange
             onChange={(e) => onChange('precio', e.target.value)}
           />
         </div>
+      </div>
       </div>
     </div>
   );

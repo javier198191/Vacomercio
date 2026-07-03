@@ -14,7 +14,7 @@ export const Input: React.FC<InputProps> = ({
 }) => {
   return (
     <div className="flex flex-col gap-xs w-full">
-      <label className="font-label-bold text-label-bold text-on-surface" htmlFor={id}>
+      <label className="font-sans font-bold text-vc-black" htmlFor={id}>
         {label}
       </label>
       <div className="relative w-full">
@@ -25,7 +25,7 @@ export const Input: React.FC<InputProps> = ({
         )}
         <input
           id={id}
-          className={`w-full border border-outline-variant bg-surface-bright rounded px-sm py-sm text-body-md focus:border-2 focus:border-primary focus:outline-none transition-all ${
+          className={`w-full border border-vc-gray-mid bg-vc-white text-vc-black rounded-lg px-4 py-2 font-sans focus:border-vc-black focus:outline-none transition-all ${
             prefixSymbol ? 'pl-lg' : ''
           } ${className}`}
           {...props}

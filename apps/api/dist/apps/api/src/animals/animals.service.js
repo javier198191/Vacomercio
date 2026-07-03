@@ -26,9 +26,13 @@ let AnimalsService = class AnimalsService {
     async create(createAnimalDto, files) {
         const parsedPeso = Number(createAnimalDto.peso);
         const parsedPrecio = Number(createAnimalDto.precio);
-        const { fecha_limite_retiro, precio, peso, departamento, municipio, ...data } = createAnimalDto;
+        const { fecha_limite_retiro, precio, peso, departamento, municipio, en_marketplace, userId, ...data } = createAnimalDto;
+        if (!userId) {
+            throw new common_1.BadRequestException('userId is required');
+        }
+        const isMarketplace = createAnimalDto.en_marketplace === 'true' || createAnimalDto.en_marketplace === true;
         const existing = await this.prisma.animal.findFirst({
-            where: { arete: data.arete },
+            where: { arete: data.arete, userId },
         });
         if (existing) {
             throw new common_1.ConflictException('El número de arete ya se encuentra registrado');
@@ -60,6 +64,7 @@ let AnimalsService = class AnimalsService {
         return this.prisma.animal.create({
             data: {
                 ...data,
+                userId,
                 peso: parsedPeso,
                 precio: parsedPrecio,
                 departamento,
@@ -67,11 +72,24 @@ let AnimalsService = class AnimalsService {
                 estado,
                 foto_url,
                 fecha_limite_retiro: fecha_limite_retiro ? new Date(fecha_limite_retiro) : null,
+                en_marketplace: isMarketplace,
             },
         });
     }
-    async findAll() {
+    async findAll(userId, loteId) {
+        const where = {
+            userId,
+        };
+        if (loteId !== undefined) {
+            if (loteId === 'null') {
+                where.loteId = null;
+            }
+            else {
+                where.loteId = loteId;
+            }
+        }
         return this.prisma.animal.findMany({
+            where,
             include: {
                 lot: true,
                 user: true,
@@ -93,10 +111,13 @@ let AnimalsService = class AnimalsService {
     }
     async update(id, updateAnimalDto) {
         await this.findOne(id);
-        const { fecha_limite_retiro, precio, ...data } = updateAnimalDto;
+        const { fecha_limite_retiro, precio, peso, ...data } = updateAnimalDto;
         const updateData = { ...data };
         if (precio !== undefined) {
-            updateData.precio = precio;
+            updateData.precio = Number(precio);
+        }
+        if (peso !== undefined) {
+            updateData.peso = Number(peso);
         }
         if (fecha_limite_retiro !== undefined) {
             updateData.fecha_limite_retiro = fecha_limite_retiro ? new Date(fecha_limite_retiro) : null;
@@ -118,6 +139,17 @@ let AnimalsService = class AnimalsService {
         await this.findOne(id);
         return this.prisma.animal.delete({
             where: { id },
+        });
+    }
+    async updateMarketplaceStatus(id, en_marketplace, precio) {
+        await this.findOne(id);
+        const updateData = { en_marketplace };
+        if (precio !== undefined) {
+            updateData.precio = precio;
+        }
+        return this.prisma.animal.update({
+            where: { id },
+            data: updateData,
         });
     }
 };

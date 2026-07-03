@@ -36,10 +36,15 @@ export class CreateLotDto {
   @IsString()
   municipio!: string;
 
+  @IsOptional()
   @IsString()
-  userId!: string;
+  userId?: string;
 
   @IsOptional()
   @IsString()
   foto_url?: string;
+
+  @IsOptional()
+  @IsString()
+  categoria?: string;
 }

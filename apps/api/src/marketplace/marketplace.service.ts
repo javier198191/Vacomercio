@@ -55,6 +55,7 @@ export class MarketplaceService {
       const animalWhere: Prisma.AnimalWhereInput = {
         estado: AnimalEstado.DISPONIBLE,
         loteId: null, // Only individual ones
+        en_marketplace: true,
       };
 
       if (departmentsFilter.length > 0) {
@@ -108,6 +109,7 @@ export class MarketplaceService {
     if ((!typeFilter || typeFilter === 'lote') && !query.raza) {
       const lotWhere: Prisma.LotWhereInput = {
         estado: LotEstado.DISPONIBLE,
+        en_marketplace: true,
       };
 
       if (departmentsFilter.length > 0) {

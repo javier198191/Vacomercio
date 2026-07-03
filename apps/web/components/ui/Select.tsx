@@ -20,13 +20,13 @@ export const Select: React.FC<SelectProps> = ({
   return (
     <div className="flex flex-col gap-xs w-full">
       {label && (
-        <label className="font-label-bold text-label-bold text-on-surface" htmlFor={id}>
+        <label className="font-sans font-bold text-vc-black" htmlFor={id}>
           {label}
         </label>
       )}
       <select
         id={id}
-        className={`w-full border border-outline-variant bg-surface-bright rounded px-sm py-sm text-body-md focus:border-2 focus:border-primary focus:outline-none transition-all ${className}`}
+        className={`w-full border border-vc-gray-mid bg-vc-white text-vc-black rounded-lg px-4 py-2 font-sans focus:border-vc-black focus:outline-none transition-all ${className}`}
         {...props}
       >
         {options.map((opt) => (

@@ -58,6 +58,7 @@ __decorate([
     __metadata("design:type", String)
 ], CreateLotDto.prototype, "municipio", void 0);
 __decorate([
+    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateLotDto.prototype, "userId", void 0);
@@ -66,4 +67,9 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateLotDto.prototype, "foto_url", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateLotDto.prototype, "categoria", void 0);
 //# sourceMappingURL=create-lot.dto.js.map

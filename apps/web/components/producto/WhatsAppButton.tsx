@@ -28,7 +28,7 @@ export const WhatsAppButton: React.FC<WhatsAppButtonProps> = ({
         href={buildWaLink()}
         target="_blank"
         rel="noopener noreferrer"
-        className="w-full max-w-md h-[56px] bg-primary text-on-primary rounded-lg font-label-bold text-[16px] flex items-center justify-center gap-sm hover:bg-primary-container transition-colors shadow-sm"
+        className="w-full max-w-md h-[56px] bg-vc-green text-vc-white rounded-lg font-sans font-bold text-[16px] flex items-center justify-center gap-2 hover:opacity-90 transition-colors shadow-sm"
       >
         <span className="material-symbols-outlined">chat</span>
         Me Interesa — Negociar por WhatsApp

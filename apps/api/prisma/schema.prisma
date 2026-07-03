@@ -8,10 +8,7 @@ generator client {
   provider = "prisma-client-js"
 }
 
-enum UserTipo {
-  GANADERO
-  COMPRADOR
-}
+
 
 enum AnimalEstado {
   DISPONIBLE
@@ -40,10 +37,17 @@ enum AnimalTipo {
   TORO
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
 model User {
   id                  String       @id
   nombre              String
-  tipo                UserTipo
+  email               String       @unique
+  password            String
+  rol                 Role         @default(USER)
   finca_nombre        String?
   departamento        String
   municipio           String
@@ -59,6 +63,20 @@ model User {
   salesAsComprador    Sale[]       @relation("CompradorSales")
   ratingsGiven        Rating[]     @relation("RatingsGiven")
   ratingsReceived     Rating[]     @relation("RatingsReceived")
+  empresa             Empresa?
+}
+
+model Empresa {
+  id                  String       @id @default(uuid())
+  userId              String       @unique
+  nit                 String       @unique
+  razon_social        String
+  rut_url             String?
+  is_verified         Boolean      @default(false)
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  user                User         @relation(fields: [userId], references: [id])
 }
 
 model Animal {
@@ -75,6 +93,7 @@ model Animal {
   municipio               String
   userId                  String
   loteId                  String?
+  en_marketplace          Boolean      @default(false)
   createdAt               DateTime     @default(now())
   
   // Medical Withdrawal Fields
@@ -97,9 +116,11 @@ model Lot {
   precio        Decimal     @db.Decimal(12, 2)
   estado        LotEstado   @default(DISPONIBLE)
   foto_url      String?
+  categoria     String?
   departamento  String
   municipio     String
   userId        String
+  en_marketplace Boolean    @default(false)
   createdAt     DateTime    @default(now())
 
   user          User        @relation(fields: [userId], references: [id])

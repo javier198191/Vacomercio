@@ -15,9 +15,9 @@ export const Button: React.FC<ButtonProps> = ({
   const baseStyle = 'inline-flex items-center justify-center font-label-bold text-label-bold rounded-lg px-md py-sm min-h-[48px] transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none';
   
   const variants = {
-    primary: 'bg-primary text-on-primary hover:bg-primary-container border border-primary',
-    secondary: 'bg-secondary text-on-primary hover:bg-secondary-container border border-secondary',
-    ghost: 'bg-surface-bright text-on-surface hover:bg-surface-container border border-outline-variant',
+    primary: 'bg-vc-black text-vc-white font-bold rounded-lg px-6 py-3 hover:bg-vc-gray-dark',
+    secondary: 'bg-vc-white border border-vc-black text-vc-black font-bold rounded-lg hover:bg-vc-gray-light',
+    ghost: 'bg-transparent text-vc-black font-bold hover:bg-vc-gray-light rounded-lg px-6 py-3',
   };
 
   const widthStyle = fullWidth ? 'w-full' : '';

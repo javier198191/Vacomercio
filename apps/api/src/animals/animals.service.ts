@@ -21,11 +21,17 @@ export class AnimalsService {
     const parsedPeso = Number(createAnimalDto.peso);
     const parsedPrecio = Number(createAnimalDto.precio);
 
-    const { fecha_limite_retiro, precio, peso, departamento, municipio, ...data } = createAnimalDto;
+    const { fecha_limite_retiro, precio, peso, departamento, municipio, en_marketplace, userId, ...data } = createAnimalDto;
     
-    // Check if an animal with the same arete already exists
+    if (!userId) {
+      throw new BadRequestException('userId is required');
+    }
+
+    const isMarketplace = (createAnimalDto.en_marketplace as any) === 'true' || createAnimalDto.en_marketplace === true;
+
+    // Check if an animal with the same arete already exists for this user
     const existing = await this.prisma.animal.findFirst({
-      where: { arete: data.arete },
+      where: { arete: data.arete, userId },
     });
     if (existing) {
       throw new ConflictException('El número de arete ya se encuentra registrado');
@@ -69,6 +75,7 @@ export class AnimalsService {
     return this.prisma.animal.create({
       data: {
         ...data,
+        userId,
         peso: parsedPeso,
         precio: parsedPrecio,
         departamento,
@@ -76,12 +83,24 @@ export class AnimalsService {
         estado,
         foto_url,
         fecha_limite_retiro: fecha_limite_retiro ? new Date(fecha_limite_retiro) : null,
+        en_marketplace: isMarketplace,
       },
     });
   }
 
-  async findAll() {
+  async findAll(userId: string, loteId?: string) {
+    const where: any = {
+      userId,
+    };
+    if (loteId !== undefined) {
+      if (loteId === 'null') {
+        where.loteId = null;
+      } else {
+        where.loteId = loteId;
+      }
+    }
     return this.prisma.animal.findMany({
+      where,
       include: {
         lot: true,
         user: true,
@@ -109,11 +128,15 @@ export class AnimalsService {
     // Check if animal exists
     await this.findOne(id);
 
-    const { fecha_limite_retiro, precio, ...data } = updateAnimalDto;
+    const { fecha_limite_retiro, precio, peso, ...data } = updateAnimalDto;
     const updateData: any = { ...data };
 
     if (precio !== undefined) {
-      updateData.precio = precio;
+      updateData.precio = Number(precio);
+    }
+
+    if (peso !== undefined) {
+      updateData.peso = Number(peso);
     }
 
     if (fecha_limite_retiro !== undefined) {
@@ -140,6 +163,18 @@ export class AnimalsService {
     await this.findOne(id);
     return this.prisma.animal.delete({
       where: { id },
+    });
+  }
+
+  async updateMarketplaceStatus(id: string, en_marketplace: boolean, precio?: number) {
+    await this.findOne(id);
+    const updateData: any = { en_marketplace };
+    if (precio !== undefined) {
+      updateData.precio = precio;
+    }
+    return this.prisma.animal.update({
+      where: { id },
+      data: updateData,
     });
   }
 }

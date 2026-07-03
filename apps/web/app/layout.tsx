@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { AuthProvider } from '../context/AuthContext';
+import { NavBar } from '../components/NavBar';
 
 export const metadata: Metadata = {
   title: 'Vacomercio - Marketplace de Ganado B2B',
@@ -24,7 +26,10 @@ export default function RootLayout({
         />
       </head>
       <body>
-        {children}
+        <AuthProvider>
+          <NavBar />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

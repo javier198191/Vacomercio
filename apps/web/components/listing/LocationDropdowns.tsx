@@ -19,13 +19,13 @@ export const LocationDropdowns: React.FC<LocationDropdownsProps> = ({
   const municipalities = departamento ? MUNICIPALITIES_BY_DEPARTMENT[departamento] || [] : [];
 
   return (
-    <div className="pt-gutter border-t border-outline-variant">
-      <h3 className="font-headline-md text-headline-md text-on-surface mb-md">Ubicación del Ganado</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+    <div className="border border-vc-gray-mid rounded-xl p-6 bg-[#F9FAFB] mt-6">
+      <h2 className="font-sans font-bold text-lg text-vc-black block border-b border-vc-gray-light pb-2 mb-6">📍 3. Ubicación del Ganado</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
         {/* Department select */}
-        <div className="flex flex-col gap-xs">
-          <label className="font-label-bold text-label-bold text-on-surface" htmlFor="pub-departamento">
+        <div className="flex flex-col gap-1">
+          <label className="font-sans font-bold text-vc-black" htmlFor="pub-departamento">
             Departamento *
           </label>
           <select
@@ -33,7 +33,7 @@ export const LocationDropdowns: React.FC<LocationDropdownsProps> = ({
             required
             value={departamento}
             onChange={(e) => onDepartamentoChange(e.target.value)}
-            className="border border-outline-variant bg-surface-bright rounded px-sm py-sm text-body-md focus:border-2 focus:border-primary focus:outline-none transition-colors"
+            className="w-full border border-vc-gray-mid bg-vc-white rounded-lg px-4 py-2 font-sans text-vc-black focus:border-vc-black focus:outline-none transition-colors"
           >
             <option value="">Seleccione departamento</option>
             {Object.keys(MUNICIPALITIES_BY_DEPARTMENT).map((dept) => (
@@ -45,8 +45,8 @@ export const LocationDropdowns: React.FC<LocationDropdownsProps> = ({
         </div>
 
         {/* Municipality select */}
-        <div className="flex flex-col gap-xs">
-          <label className="font-label-bold text-label-bold text-on-surface" htmlFor="pub-municipio">
+        <div className="flex flex-col gap-1">
+          <label className="font-sans font-bold text-vc-black" htmlFor="pub-municipio">
             Municipio *
           </label>
           <select
@@ -55,7 +55,7 @@ export const LocationDropdowns: React.FC<LocationDropdownsProps> = ({
             disabled={!departamento}
             value={municipio}
             onChange={(e) => onMunicipioChange(e.target.value)}
-            className="border border-outline-variant bg-surface-bright rounded px-sm py-sm text-body-md focus:border-2 focus:border-primary focus:outline-none transition-colors disabled:opacity-50"
+            className="w-full border border-vc-gray-mid bg-vc-white rounded-lg px-4 py-2 font-sans text-vc-black focus:border-vc-black focus:outline-none transition-colors disabled:opacity-50"
           >
             <option value="">Seleccione municipio</option>
             {municipalities.map((muni) => (

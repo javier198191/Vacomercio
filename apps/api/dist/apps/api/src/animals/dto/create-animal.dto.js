@@ -46,6 +46,7 @@ __decorate([
     __metadata("design:type", Number)
 ], CreateAnimalDto.prototype, "precio", void 0);
 __decorate([
+    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateAnimalDto.prototype, "userId", void 0);
@@ -73,6 +74,12 @@ __decorate([
     (0, class_transformer_1.Transform)(({ value }) => value === 'true' || value === true),
     __metadata("design:type", Boolean)
 ], CreateAnimalDto.prototype, "en_periodo_retiro", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    (0, class_transformer_1.Transform)(({ value }) => value === 'true' || value === true),
+    __metadata("design:type", Boolean)
+], CreateAnimalDto.prototype, "en_marketplace", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),

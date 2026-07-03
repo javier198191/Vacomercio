@@ -82,4 +82,14 @@ __decorate([
     (0, class_validator_1.IsDateString)(),
     __metadata("design:type", String)
 ], UpdateAnimalDto.prototype, "fecha_limite_retiro", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], UpdateAnimalDto.prototype, "departamento", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], UpdateAnimalDto.prototype, "municipio", void 0);
 //# sourceMappingURL=update-animal.dto.js.map

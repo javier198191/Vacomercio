@@ -52,6 +52,7 @@ let MarketplaceService = class MarketplaceService {
             const animalWhere = {
                 estado: client_1.AnimalEstado.DISPONIBLE,
                 loteId: null,
+                en_marketplace: true,
             };
             if (departmentsFilter.length > 0) {
                 animalWhere.departamento = { in: departmentsFilter };
@@ -99,6 +100,7 @@ let MarketplaceService = class MarketplaceService {
         if ((!typeFilter || typeFilter === 'lote') && !query.raza) {
             const lotWhere = {
                 estado: client_1.LotEstado.DISPONIBLE,
+                en_marketplace: true,
             };
             if (departmentsFilter.length > 0) {
                 lotWhere.departamento = { in: departmentsFilter };

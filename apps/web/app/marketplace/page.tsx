@@ -8,31 +8,7 @@ import { LocationSelector } from '@/components/marketplace/LocationSelector';
 import type { FeedItem } from '@/components/marketplace/ProductCard';
 
 // ── Shared Nav/Footer components defined inline to avoid extra files ──────────
-const NavBar: React.FC = () => (
-  <header className="bg-surface-container-lowest border-b border-outline-variant shadow-sm sticky top-0 w-full z-50">
-    <div className="flex justify-between items-center w-full px-margin-mobile md:px-md h-[72px] max-w-container-max mx-auto">
-      <div className="flex items-center gap-sm">
-        <Link href="/" className="text-headline-md font-headline-md font-bold text-primary">
-          Vacomercio
-        </Link>
-      </div>
-      <nav className="hidden md:flex gap-gutter items-center h-full">
-        <Link href="/marketplace" className="text-primary border-b-2 border-primary pb-1 h-full flex items-center font-label-bold text-label-bold">
-          Marketplace
-        </Link>
-        <Link href="/publicar" className="text-on-surface-variant hover:text-primary transition-colors h-full flex items-center font-label-bold text-label-bold">
-          Publicar
-        </Link>
-        <Link href="/lotes/armar" className="text-on-surface-variant hover:text-primary transition-colors h-full flex items-center font-label-bold text-label-bold">
-          Mis Lotes
-        </Link>
-      </nav>
-      <div className="flex items-center gap-sm">
-        <LocationSelector />
-      </div>
-    </div>
-  </header>
-);
+
 
 const Footer: React.FC = () => (
   <footer className="bg-surface-container-highest mt-auto w-full">
@@ -172,19 +148,24 @@ export default function MarketplacePage() {
 
   return (
     <>
-      <NavBar />
       <main className="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-md py-gutter">
-        {/* Page heading */}
-        <div className="mb-lg">
-          <h1 className="font-headline-lg text-headline-lg text-on-surface hidden md:block">
-            Marketplace de Ganado
-          </h1>
-          <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface md:hidden">
-            Marketplace
-          </h1>
-          <p className="font-body-md text-body-md text-on-surface-variant mt-xs">
-            Ganado en venta directa de ganaderos verificados de toda Colombia.
-          </p>
+        {/* Page heading / Hero */}
+        <div className="mb-lg relative overflow-hidden bg-vc-black text-vc-white p-8 rounded-xl border border-vc-gray-light">
+          {/* SVG Background */}
+          <svg className="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="10%" cy="20%" rx="5%" ry="8%" fill="white" opacity="0.05" />
+            <ellipse cx="80%" cy="10%" rx="8%" ry="5%" fill="white" opacity="0.06" />
+            <ellipse cx="40%" cy="80%" rx="6%" ry="4%" fill="white" opacity="0.04" />
+            <ellipse cx="90%" cy="80%" rx="7%" ry="9%" fill="white" opacity="0.07" />
+          </svg>
+          <div className="relative z-10">
+            <h1 className="font-serif font-bold text-4xl md:text-5xl mb-2 text-vc-white">
+              Marketplace de Ganado
+            </h1>
+            <p className="font-sans font-normal text-[#CCCCCC] text-lg">
+              Ganado en venta directa de ganaderos verificados de toda Colombia.
+            </p>
+          </div>
         </div>
 
         <FilterBar

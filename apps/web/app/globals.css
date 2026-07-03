@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply bg-background text-on-background font-body-md min-h-screen flex flex-col;
+    @apply bg-vc-white text-vc-black font-sans min-h-screen flex flex-col;
   }
 }
 
@@ -13,15 +13,14 @@
   height: 6px;
 }
 .gallery-scroll::-webkit-scrollbar-track {
-  background: #e6eeff;
+  @apply bg-vc-gray-light;
   border-radius: 4px;
 }
 .gallery-scroll::-webkit-scrollbar-thumb {
-  background: #bfc9c1;
+  @apply bg-vc-gray-mid;
   border-radius: 4px;
 }
 
 .custom-checkbox:checked {
-  background-color: #0f5238;
-  border-color: #0f5238;
+  @apply bg-vc-green border-vc-green;
 }

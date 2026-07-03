@@ -40,10 +40,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
   const mainImageUrl = item.foto_url ? item.foto_url.split(',')[0] : null;
 
   return (
-    <article className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden flex flex-col hover:shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] transition-shadow duration-200">
+    <article className="bg-vc-white rounded-xl border border-vc-gray-light overflow-hidden flex flex-col">
       
       {/* Photo Container */}
-      <div className="h-48 w-full relative bg-surface-container">
+      <div className="h-48 w-full relative bg-vc-gray-dark">
         {mainImageUrl ? (
           <img
             src={mainImageUrl}
@@ -51,44 +51,44 @@ export const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
             className="w-full h-full object-cover"
           />
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center text-outline">
+          <div className="w-full h-full flex flex-col items-center justify-center text-vc-white">
             <span className="material-symbols-outlined text-[48px]">image</span>
-            <span className="text-body-sm font-body-sm mt-xs">Sin foto</span>
+            <span className="text-sm font-sans mt-1">Sin foto</span>
           </div>
         )}
         
         {/* Status Badge */}
-        <div className="absolute top-sm right-sm bg-primary text-on-primary px-sm py-xs rounded text-label-sm font-label-bold">
+        <div className="absolute top-2 right-2 bg-vc-black text-vc-white px-2 py-1 rounded text-xs font-sans font-bold border border-vc-gray-light">
           {isLote ? 'Lote Disponible' : 'Disponible'}
         </div>
       </div>
 
       {/* Info Body */}
-      <div className="p-md flex flex-col flex-grow">
+      <div className="p-4 flex flex-col flex-grow">
         
-        <h3 className="text-headline-md font-headline-md text-on-surface mb-xs truncate">
+        <h3 className="text-xl font-serif font-bold text-vc-black mb-1 truncate">
           {item.nombre}
         </h3>
         
-        <p className="text-body-sm font-body-sm text-on-surface-variant mb-sm">
+        <p className="text-sm font-sans text-vc-gray-mid mb-3">
           {item.areteOrLoteNumber}
         </p>
 
         {/* Bento-style Metrics Grid */}
-        <div className="grid grid-cols-2 gap-sm mb-md bg-surface p-sm rounded border border-surface-variant">
+        <div className="grid grid-cols-2 gap-2 mb-4 bg-vc-white p-2 rounded border border-vc-gray-light">
           <div>
-            <span className="block text-label-sm font-label-sm text-on-surface-variant">
+            <span className="block text-xs font-sans text-vc-gray-mid">
               {isLote ? 'Peso Prom.' : 'Peso'}
             </span>
-            <span className="text-body-md font-label-bold text-on-surface">
+            <span className="text-sm font-sans font-bold text-vc-black">
               {item.peso} kg
             </span>
           </div>
           <div>
-            <span className="block text-label-sm font-label-sm text-on-surface-variant">
+            <span className="block text-xs font-sans text-vc-gray-mid">
               {isLote ? 'Cantidad' : 'Detalle'}
             </span>
-            <span className="text-body-md font-label-bold text-on-surface truncate">
+            <span className="text-sm font-sans font-bold text-vc-black truncate">
               {item.razaOrQuantity}
             </span>
           </div>
@@ -96,11 +96,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
 
         {/* Price and Location */}
         <div className="mt-auto">
-          <p className="text-headline-md font-headline-md text-primary mb-xs font-bold">
+          <p className="text-2xl font-sans font-bold text-vc-green mb-1">
             {formatPrice(item.precio)}
           </p>
-          <p className="text-body-sm font-body-sm text-on-surface-variant flex items-center gap-xs">
-            <span className="material-symbols-outlined text-[16px] text-primary">location_on</span>
+          <p className="text-sm font-sans text-vc-gray-mid flex items-center gap-1">
+            <span className="material-symbols-outlined text-[16px] text-vc-black">location_on</span>
             <span>{item.municipio}, {item.departamento}</span>
           </p>
         </div>
@@ -108,7 +108,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
         {/* Details CTA Link */}
         <Link
           href={`/producto/${item.id}`}
-          className="w-full mt-md bg-secondary text-on-primary font-label-bold text-label-bold rounded-lg px-md py-sm min-h-[48px] hover:bg-secondary-container transition-colors flex items-center justify-center"
+          className="w-full mt-4 bg-vc-white border border-vc-black text-vc-black font-bold font-sans rounded-lg px-4 py-2 hover:bg-vc-gray-light transition-colors flex items-center justify-center"
         >
           Ver Detalles
         </Link>

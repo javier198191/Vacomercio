@@ -3,8 +3,9 @@ import { AnimalRaza, AnimalTipo } from '@prisma/client';
 import { Type, Transform } from 'class-transformer';
 
 export class CreateAnimalDto {
+  @IsOptional()
   @IsString()
-  nombre!: string;
+  nombre?: string;
 
   @IsString()
   arete!: string;
@@ -26,8 +27,9 @@ export class CreateAnimalDto {
   @Type(() => Number)
   precio!: number;
 
+  @IsOptional()
   @IsString()
-  userId!: string;
+  userId?: string;
 
   @IsString()
   departamento!: string;
@@ -47,6 +49,11 @@ export class CreateAnimalDto {
   @IsBoolean()
   @Transform(({ value }) => value === 'true' || value === true)
   en_periodo_retiro?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => value === 'true' || value === true)
+  en_marketplace?: boolean;
 
   @IsOptional()
   @IsString()
