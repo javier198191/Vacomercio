@@ -25,11 +25,8 @@ let AnimalsController = class AnimalsController {
         this.animalsService = animalsService;
     }
     create(createAnimalDto, files, user) {
-        if (!files || files.length === 0) {
-            throw new common_1.BadRequestException('Debe subir al menos una foto obligatoriamente para poder publicar.');
-        }
         createAnimalDto.userId = user.id;
-        return this.animalsService.create(createAnimalDto, files);
+        return this.animalsService.create(createAnimalDto, files || []);
     }
     findAll(user, loteId) {
         return this.animalsService.findAll(user.id, loteId);

@@ -17,6 +17,7 @@ class CreateAnimalDto {
 }
 exports.CreateAnimalDto = CreateAnimalDto;
 __decorate([
+    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateAnimalDto.prototype, "nombre", void 0);

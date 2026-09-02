@@ -147,14 +147,16 @@ function LoginContent() {
 
         <div className="flex items-center my-6">
           <div className="flex-grow border-t border-outline-variant"></div>
-          <span className="px-3 text-on-surface-variant font-label-sm">O</span>
+          <span className="px-3 text-on-surface-variant font-label-sm">o continuar con</span>
           <div className="flex-grow border-t border-outline-variant"></div>
         </div>
 
         <button
           type="button"
-          onClick={handleGoogleLogin}
-          className="w-full py-sm rounded-lg bg-surface-container-lowest border border-outline-variant text-on-surface hover:bg-surface-dim font-label-bold text-label-bold transition-colors flex justify-center items-center gap-base"
+          onClick={() => {
+            window.location.href = 'http://localhost:8081/api/auth/google';
+          }}
+          className="bg-vc-white border border-vc-black text-vc-black font-sans font-bold rounded-lg py-3 w-full hover:bg-vc-gray-light transition-colors flex justify-center items-center gap-base"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />

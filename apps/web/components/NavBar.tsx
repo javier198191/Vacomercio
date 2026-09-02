@@ -89,6 +89,14 @@ export const NavBar: React.FC = () => {
                     <p className="font-sans font-bold text-vc-black truncate">{user.email}</p>
                     <p className="font-sans text-vc-gray-dark text-xs mt-1">Rol: {user.rol}</p>
                   </div>
+                  <Link
+                    href="/perfil"
+                    onClick={() => setDropdownOpen(false)}
+                    className="w-full text-left px-4 py-2 font-sans font-bold text-vc-black hover:bg-vc-gray-light transition-colors flex items-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">person</span>
+                    Mi Perfil
+                  </Link>
                   <button
                     onClick={() => {
                       setDropdownOpen(false);

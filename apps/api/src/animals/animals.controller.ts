@@ -18,12 +18,9 @@ export class AnimalsController {
     @UploadedFiles() files: Express.Multer.File[],
     @CurrentUser() user: any,
   ) {
-    if (!files || files.length === 0) {
-      throw new BadRequestException('Debe subir al menos una foto obligatoriamente para poder publicar.');
-    }
     // Overwrite userId with the authenticated user's ID
     createAnimalDto.userId = user.id;
-    return this.animalsService.create(createAnimalDto, files);
+    return this.animalsService.create(createAnimalDto, files || []);
   }
 
   @UseGuards(JwtAuthGuard)

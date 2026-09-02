@@ -37,25 +37,45 @@ export const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
   };
 
   const isLote = item.tipo === 'lote';
-  const mainImageUrl = item.foto_url ? item.foto_url.split(',')[0] : null;
+  const images = item.foto_url ? item.foto_url.split(',').filter(Boolean) : [];
+  const collageImages = images.slice(0, 4);
+  const mainImageUrl = images.length > 0 ? images[0] : null;
+
+  const renderPhotoContent = () => {
+    if (isLote && collageImages.length > 1) {
+      const len = collageImages.length;
+      let gridClass = 'grid-cols-2';
+      if (len >= 3) gridClass = 'grid-cols-2 grid-rows-2';
+      
+      return (
+        <div className={`w-full h-full grid gap-0.5 ${gridClass}`}>
+          {collageImages.map((img, idx) => {
+            let itemClass = 'w-full h-full object-cover';
+            if (len === 3 && idx === 0) itemClass = 'w-full h-full object-cover col-span-2 row-span-1';
+            return <img key={idx} src={img} alt={`${item.nombre} - ${idx}`} className={itemClass} />;
+          })}
+        </div>
+      );
+    }
+    
+    if (mainImageUrl) {
+      return <img src={mainImageUrl} alt={item.nombre} className="w-full h-full object-cover" />;
+    }
+    
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center text-vc-white">
+        <span className="material-symbols-outlined text-[48px]">image</span>
+        <span className="text-sm font-sans mt-1">Sin foto</span>
+      </div>
+    );
+  };
 
   return (
     <article className="bg-vc-white rounded-xl border border-vc-gray-light overflow-hidden flex flex-col">
       
       {/* Photo Container */}
       <div className="h-48 w-full relative bg-vc-gray-dark">
-        {mainImageUrl ? (
-          <img
-            src={mainImageUrl}
-            alt={item.nombre}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center text-vc-white">
-            <span className="material-symbols-outlined text-[48px]">image</span>
-            <span className="text-sm font-sans mt-1">Sin foto</span>
-          </div>
-        )}
+        {renderPhotoContent()}
         
         {/* Status Badge */}
         <div className="absolute top-2 right-2 bg-vc-black text-vc-white px-2 py-1 rounded text-xs font-sans font-bold border border-vc-gray-light">
@@ -107,7 +127,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
 
         {/* Details CTA Link */}
         <Link
-          href={`/producto/${item.id}`}
+          href={`/marketplace/${isLote ? 'lote/' : ''}${item.id}`}
           className="w-full mt-4 bg-vc-white border border-vc-black text-vc-black font-bold font-sans rounded-lg px-4 py-2 hover:bg-vc-gray-light transition-colors flex items-center justify-center"
         >
           Ver Detalles

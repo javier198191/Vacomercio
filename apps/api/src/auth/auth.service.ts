@@ -77,6 +77,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    if (!user.password) {
+      throw new UnauthorizedException('Esta cuenta está vinculada a Google. Por favor, inicia sesión con Google.');
+    }
+
     // Compare passwords
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
@@ -94,5 +98,74 @@ export class AuthService {
       access_token,
       user: userWithoutPassword,
     };
+  }
+
+  async googleLogin(req: any) {
+    if (!req.user) {
+      throw new UnauthorizedException('No user from google');
+    }
+
+    const { email, firstName, lastName } = req.user;
+    
+    let user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      user = await this.prisma.user.create({
+        data: {
+          id: crypto.randomUUID(),
+          email,
+          nombre: `${firstName || ''} ${lastName || ''}`.trim() || 'Usuario Google',
+          departamento: 'POR_DEFINIR',
+          municipio: 'POR_DEFINIR',
+          telefono: 'POR_DEFINIR',
+          rol: 'USER',
+        }
+      });
+    }
+
+    const payload = { sub: user.id, email: user.email, rol: user.rol };
+    const access_token = this.jwtService.sign(payload);
+
+    const { password: _, ...userWithoutPassword } = user;
+
+    return {
+      access_token,
+      user: userWithoutPassword,
+    };
+  }
+
+  async getMe(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!user) {
+      throw new UnauthorizedException('Usuario no encontrado');
+    }
+    const { password: _, ...userWithoutPassword } = user;
+    return userWithoutPassword;
+  }
+
+  async completarPerfil(userId: string, data: { nombre?: string; telefono: string; departamento: string; municipio: string }) {
+    const { nombre, telefono, departamento, municipio } = data;
+    
+    const updateData: any = {
+      telefono,
+      departamento,
+      municipio,
+    };
+
+    if (nombre) {
+      updateData.nombre = nombre;
+    }
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+    });
+
+    const { password: _, ...userWithoutPassword } = updatedUser;
+    return userWithoutPassword;
   }
 }

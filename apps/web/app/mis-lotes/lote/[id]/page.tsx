@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { apiFetch } from '../../../../lib/api';
 
 export default function LoteInternalPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -25,14 +26,24 @@ export default function LoteInternalPage({ params }: { params: { id: string } })
   const [looseAnimals, setLooseAnimals] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081'}/lots/${params.id}`)
-      .then(res => res.json())
+    if (!params?.id) return;
+    setLoading(true);
+    apiFetch(`/lots/${params.id}`)
+      .then(res => {
+        if (!res.ok) throw new Error('Error al cargar detalle de lote');
+        return res.json();
+      })
       .then(data => {
         setLot(data);
         setPrice(data.precio || '');
+      })
+      .catch(err => {
+        console.error(err);
+      })
+      .finally(() => {
         setLoading(false);
       });
-  }, [params.id]);
+  }, [params?.id]);
 
   // Load and pre-fill form when modal is opened
   useEffect(() => {
@@ -45,7 +56,7 @@ export default function LoteInternalPage({ params }: { params: { id: string } })
       setTempAnimals([...lot.animals]);
 
       // Fetch loose cattle for this user
-      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081'}/animals?userId=${lot.userId}&loteId=null`)
+      apiFetch(`/animals?userId=${lot.userId}&loteId=null`)
         .then(res => res.json())
         .then(data => {
           setLooseAnimals(data);
@@ -56,7 +67,7 @@ export default function LoteInternalPage({ params }: { params: { id: string } })
 
   const handlePublish = async () => {
     setPublishing(true);
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081'}/lots/${params.id}/marketplace`, {
+    await apiFetch(`/lots/${params.id}/marketplace`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ en_marketplace: true, precio: Number(price) })
@@ -67,7 +78,7 @@ export default function LoteInternalPage({ params }: { params: { id: string } })
 
   const handleUnpublish = async () => {
     setPublishing(true);
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081'}/lots/${params.id}/marketplace`, {
+    await apiFetch(`/lots/${params.id}/marketplace`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ en_marketplace: false })
@@ -79,7 +90,7 @@ export default function LoteInternalPage({ params }: { params: { id: string } })
   const confirmDelete = async () => {
     setIsDeleteModalOpen(false);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081'}/lots/${params.id}`, {
+      const res = await apiFetch(`/lots/${params.id}`, {
         method: 'DELETE'
       });
       if (res.ok) {
@@ -112,7 +123,7 @@ export default function LoteInternalPage({ params }: { params: { id: string } })
     }
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081'}/lots/${params.id}`, {
+      const res = await apiFetch(`/lots/${params.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -137,15 +148,13 @@ export default function LoteInternalPage({ params }: { params: { id: string } })
     }
   };
 
-  if (loading) {
+  if (loading || !lot) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="flex justify-center items-center h-screen bg-vc-white">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
       </div>
     );
   }
-
-  if (!lot) return <div className="p-8 text-center text-xl">Lote no encontrado</div>;
 
   // Filter animals that are currently added to show in the list inside the form
   const animalsInLotForm = tempAnimals.filter(a => selectedAnimalIds.includes(a.id));
@@ -182,19 +191,19 @@ export default function LoteInternalPage({ params }: { params: { id: string } })
               <div className="grid grid-cols-2 gap-sm mb-md">
                 <div className="bg-surface-container p-sm rounded-lg">
                   <p className="text-sm text-on-surface-variant font-bold">Cantidad</p>
-                  <p className="text-xl font-bold text-on-surface">{lot.cantidad} Cabezas</p>
+                  <p className="text-xl font-bold text-on-surface">{lot.cantidad || 0} Cabezas</p>
                 </div>
                 <div className="bg-surface-container p-sm rounded-lg">
                   <p className="text-sm text-on-surface-variant font-bold">Peso Promedio</p>
-                  <p className="text-xl font-bold text-on-surface">{lot.peso_promedio.toFixed(1)} Kg</p>
+                  <p className="text-xl font-bold text-on-surface">{(Number(lot.peso_promedio) || 0).toFixed(1)} Kg</p>
                 </div>
                 <div className="bg-surface-container p-sm rounded-lg">
                   <p className="text-sm text-on-surface-variant font-bold">Peso Total</p>
-                  <p className="text-xl font-bold text-on-surface">{lot.peso_total.toFixed(0)} Kg</p>
+                  <p className="text-xl font-bold text-on-surface">{(Number(lot.peso_total) || 0).toFixed(0)} Kg</p>
                 </div>
                 <div className="bg-surface-container p-sm rounded-lg">
                   <p className="text-sm text-on-surface-variant font-bold">Ubicación</p>
-                  <p className="text-xl font-bold text-on-surface">{lot.municipio}, {lot.departamento}</p>
+                  <p className="text-xl font-bold text-on-surface">{lot.municipio || ''}, {lot.departamento || ''}</p>
                 </div>
               </div>
               
@@ -204,7 +213,7 @@ export default function LoteInternalPage({ params }: { params: { id: string } })
                   <div key={an.id} className="flex justify-between items-center text-base p-xs border-b border-outline-variant/30 last:border-0">
                     <div className="flex flex-col">
                       <span className="font-medium text-on-surface">{an.nombre}</span>
-                      <span className="text-sm text-on-surface-variant">{an.peso} Kg • {an.raza}</span>
+                      <span className="text-sm text-on-surface-variant">{an.peso || 0} Kg • {an.raza}</span>
                     </div>
                     <span className="text-on-surface-variant font-bold text-sm bg-surface-container-lowest px-2 py-1 rounded">#{an.arete}</span>
                   </div>
@@ -222,14 +231,20 @@ export default function LoteInternalPage({ params }: { params: { id: string } })
                     <span className="material-symbols-outlined text-[32px] text-primary">public</span>
                     <span className="text-xl font-bold">Visible en Marketplace</span>
                   </div>
-                  <p className="text-lg mb-md">Este lote se está ofreciendo actualmente por <strong>${Number(lot.precio).toLocaleString('es-CO')}</strong></p>
-                  <Link href={`/producto/${lot.id}`} className="block w-full text-center bg-surface-container text-on-surface font-bold py-sm rounded-xl border border-outline hover:bg-surface-container-highest transition-colors mb-sm">
-                    Ver en Marketplace
-                  </Link>
+                  <p className="text-lg mb-md">Este lote se está ofreciendo actualmente por <strong>${Number(lot.precio || 0).toLocaleString('es-CO')}</strong></p>
+                  {lot?.id ? (
+                    <Link href={`/marketplace/lote/${lot.id}`} className="block w-full text-center bg-surface-container text-on-surface font-bold py-sm rounded-xl border border-outline hover:bg-surface-container-highest transition-colors mb-sm">
+                      Ver en Marketplace
+                    </Link>
+                  ) : (
+                    <button disabled className="block w-full text-center bg-surface-container text-on-surface-variant font-bold py-sm rounded-xl border border-outline opacity-50 cursor-not-allowed mb-sm">
+                      Ver en Marketplace
+                    </button>
+                  )}
                   <button 
                     onClick={handleUnpublish} 
                     disabled={publishing}
-                    className="w-full bg-error text-white font-bold py-sm rounded-xl hover:bg-error-container hover:text-on-error-container transition-colors"
+                    className="bg-white text-vc-black border border-vc-black px-4 py-2 rounded-lg font-bold hover:bg-vc-gray-light w-full mt-4"
                   >
                     {publishing ? 'Actualizando...' : 'Retirar del Marketplace'}
                   </button>
@@ -289,25 +304,25 @@ export default function LoteInternalPage({ params }: { params: { id: string } })
 
       {/* Modal de Confirmación de Eliminación */}
       {isDeleteModalOpen && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-surface-container-lowest rounded-2xl max-w-md w-full p-md border border-outline-variant shadow-2xl text-center animate-in fade-in zoom-in-95 duration-200">
-            <span className="material-symbols-outlined text-[64px] text-error mb-sm">warning</span>
-            <h3 className="text-2xl font-bold text-on-surface mb-xs">¿Estás completamente seguro?</h3>
-            <p className="text-base text-on-surface-variant mb-md">
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-40 flex justify-center items-center">
+          <div className="bg-white rounded-xl shadow-2xl p-6 z-50 relative max-w-sm w-full text-center text-vc-black">
+            <span className="material-symbols-outlined text-[64px] text-red-600 mb-4">warning</span>
+            <h3 className="text-2xl font-bold mb-2">¿Estás seguro?</h3>
+            <p className="text-base mb-6">
               Esta acción no se puede deshacer. El lote se disolverá y las vacas volverán a estar sueltas en tu inventario.
             </p>
-            <div className="flex gap-sm justify-center">
+            <div className="flex gap-4 justify-center">
               <button 
                 onClick={() => setIsDeleteModalOpen(false)}
-                className="bg-surface-container text-on-surface font-bold py-sm px-md rounded-xl hover:bg-surface-container-highest transition-colors text-base"
+                className="bg-gray-200 text-black px-4 py-2 rounded-lg hover:bg-gray-300"
               >
                 Cancelar
               </button>
               <button 
                 onClick={confirmDelete}
-                className="bg-error text-white font-bold py-sm px-md rounded-xl hover:bg-error-container hover:text-on-error-container transition-colors text-base"
+                className="bg-red-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-red-700"
               >
-                Sí, Eliminar Lote
+                Eliminar
               </button>
             </div>
           </div>
@@ -333,8 +348,8 @@ export default function LoteInternalPage({ params }: { params: { id: string } })
 
       {/* Modal de Edición de Lote */}
       {isEditModalOpen && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-surface-container-lowest rounded-2xl max-w-2xl w-full p-md border border-outline-variant shadow-2xl max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-40 flex justify-center items-center">
+          <div className="bg-white rounded-xl shadow-2xl p-6 z-50 relative max-w-lg w-full text-vc-black flex flex-col max-h-[90vh]">
             <div className="flex justify-between items-center mb-md flex-shrink-0">
               <h3 className="text-2xl font-bold text-on-surface">Editar Lote</h3>
               <button 
@@ -354,7 +369,7 @@ export default function LoteInternalPage({ params }: { params: { id: string } })
                     value={editForm.nombre}
                     onChange={e => setEditForm({ ...editForm, nombre: e.target.value })}
                     required
-                    className="w-full bg-surface-container border border-outline-variant rounded-lg p-sm text-base outline-none focus:border-primary"
+                    className="w-full bg-white border border-vc-gray-light rounded-lg p-3 text-base outline-none focus:border-vc-black text-vc-black"
                   />
                 </div>
                 <div>
@@ -364,7 +379,7 @@ export default function LoteInternalPage({ params }: { params: { id: string } })
                     value={editForm.categoria}
                     onChange={e => setEditForm({ ...editForm, categoria: e.target.value })}
                     placeholder="Ej. Novillos, Vacas de Cría"
-                    className="w-full bg-surface-container border border-outline-variant rounded-lg p-sm text-base outline-none focus:border-primary"
+                    className="w-full bg-white border border-vc-gray-light rounded-lg p-3 text-base outline-none focus:border-vc-black text-vc-black"
                   />
                 </div>
               </div>

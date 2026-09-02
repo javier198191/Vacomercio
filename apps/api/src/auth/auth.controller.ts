@@ -1,14 +1,16 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, Get, UseGuards, Res } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, Get, UseGuards, Res, Req, Patch, BadRequestException } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { CompletarPerfilDto } from './dto/completar-perfil.dto';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { Roles } from './decorators/roles.decorator';
 import { Role } from '@prisma/client';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -61,9 +63,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('me')
   getMe(@CurrentUser() user: any) {
-    // The JwtStrategy returns { id, email, rol }
-    // We can just return the user object directly, as it already contains the necessary info.
-    return user;
+    return this.authService.getMe(user.id);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -71,5 +71,40 @@ export class AuthController {
   @Get('admin-only')
   adminOnly(@CurrentUser() user: any) {
     return { message: 'You have admin access', user };
+  }
+
+  @Public()
+  @UseGuards(AuthGuard('google'))
+  @Get('google')
+  async googleAuth(@Req() req: Request) {
+    // This route redirects to Google for authentication
+  }
+
+  @Public()
+  @UseGuards(AuthGuard('google'))
+  @Get('google/callback')
+  async googleAuthRedirect(
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    const result = await this.authService.googleLogin(req);
+
+    res.cookie('access_token', result.access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+    });
+
+    res.redirect('http://localhost:3000/marketplace');
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('completar-perfil')
+  async completarPerfil(
+    @CurrentUser() user: any,
+    @Body() body: CompletarPerfilDto,
+  ) {
+    return this.authService.completarPerfil(user.id, body);
   }
 }

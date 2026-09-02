@@ -126,21 +126,23 @@ export class MarketplaceService {
         where: lotWhere,
         include: {
           user: true,
+          animals: true,
         },
         orderBy: { createdAt: 'desc' },
       });
 
       // Map to common feed format
       lots.forEach(l => {
+        const lotFoto = l.foto_url || (l.animals && l.animals.find(a => a.foto_url)?.foto_url) || null;
         items.push({
           id: l.id,
           nombre: l.nombre,
           tipo: 'lote',
           areteOrLoteNumber: `Lote: ${l.id.substring(0, 5).toUpperCase()}`,
-          razaOrQuantity: `${l.cantidad} Cabezas`,
+          razaOrQuantity: `${l.cantidad || (l.animals ? l.animals.length : 0)} Cabezas`,
           peso: l.peso_promedio, // Show average weight for lot
           precio: Number(l.precio),
-          foto_url: l.foto_url,
+          foto_url: lotFoto,
           departamento: l.departamento,
           municipio: l.municipio,
           createdAt: l.createdAt,

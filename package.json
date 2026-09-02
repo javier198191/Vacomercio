@@ -12,6 +12,8 @@
     "api:dev": "npm run start:dev -w apps/api",
     "web:build": "npm run build -w apps/web",
     "api:build": "npm run build -w apps/api",
+    "lint": "npm run lint -w apps/api",
+    "api:lint": "npm run lint -w apps/api",
     "shared:build": "npm run build -w packages/shared",
     "prisma:generate": "npm run prisma:generate -w apps/api",
     "prisma:migrate": "npm run prisma:migrate -w apps/api",

@@ -1,12 +1,14 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { apiFetch } from '../lib/api';
 
 interface User {
   id: string;
   email: string;
   rol: string;
+  telefono?: string;
 }
 
 interface AuthContextType {
@@ -22,6 +24,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   const checkAuth = async () => {
     try {
@@ -31,6 +34,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (res.ok) {
         const userData = await res.json();
         setUser(userData);
+        if (userData.telefono === 'POR_DEFINIR') {
+          router.push('/registro/completar-perfil');
+        }
       } else {
         setUser(null);
       }

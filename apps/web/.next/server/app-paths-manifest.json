@@ -1,9 +1,5 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
-  "/publicar/page": "app/publicar/page.js",
-  "/login/page": "app/login/page.js",
-  "/registro/page": "app/registro/page.js",
-  "/mis-lotes/page": "app/mis-lotes/page.js",
+  "/page": "app/page.js",
   "/marketplace/page": "app/marketplace/page.js",
-  "/page": "app/page.js"
+  "/mis-lotes/page": "app/mis-lotes/page.js"
 }

@@ -37,37 +37,44 @@ export class AnimalsService {
       throw new ConflictException('El número de arete ya se encuentra registrado');
     }
 
+    let foto_url = 'https://via.placeholder.com/400x300?text=Vaca+Sin+Foto';
     const supabaseUrl = process.env.SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_KEY;
 
     if (!supabaseUrl || !supabaseKey) {
-      throw new BadRequestException('Supabase credentials are not configured. Please set SUPABASE_URL and SUPABASE_KEY.');
-    }
+      console.warn('Supabase credentials are not configured. Using fallback placeholder image.');
+    } else if (files && files.length > 0) {
+      try {
+        const supabase = createClient(supabaseUrl, supabaseKey);
+        const urls: string[] = [];
 
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    const urls: string[] = [];
+        for (const file of files) {
+          const uniqueName = `${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9.]/g, '')}`;
+          
+          const { data: uploadData, error } = await supabase.storage
+            .from('animales')
+            .upload(uniqueName, file.buffer, {
+              contentType: file.mimetype,
+            });
 
-    for (const file of files) {
-      const uniqueName = `${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9.]/g, '')}`;
-      
-      const { data: uploadData, error } = await supabase.storage
-        .from('animales')
-        .upload(uniqueName, file.buffer, {
-          contentType: file.mimetype,
-        });
+          if (error) {
+            throw new Error(error.message);
+          }
 
-      if (error) {
-        throw new BadRequestException(`Error al subir la imagen a Supabase: ${error.message}`);
+          const { data: urlData } = supabase.storage
+            .from('animales')
+            .getPublicUrl(uniqueName);
+
+          urls.push(urlData.publicUrl);
+        }
+
+        if (urls.length > 0) {
+          foto_url = urls.join(',');
+        }
+      } catch (err: any) {
+        console.error('Error al subir la imagen a Supabase (activando fallback):', err);
       }
-
-      const { data: urlData } = supabase.storage
-        .from('animales')
-        .getPublicUrl(uniqueName);
-
-      urls.push(urlData.publicUrl);
     }
-
-    const foto_url = urls.join(',');
 
     // Automatically transition to EN_LOTE if loteId is provided during creation
     const estado = data.loteId ? AnimalEstado.EN_LOTE : AnimalEstado.DISPONIBLE;
@@ -75,6 +82,7 @@ export class AnimalsService {
     return this.prisma.animal.create({
       data: {
         ...data,
+        nombre: data.nombre || '',
         userId,
         peso: parsedPeso,
         precio: parsedPrecio,
@@ -113,7 +121,20 @@ export class AnimalsService {
       where: { id },
       include: {
         lot: true,
-        user: true,
+        user: {
+          select: {
+            id: true,
+            nombre: true,
+            email: true,
+            telefono: true,
+            departamento: true,
+            municipio: true,
+            rol: true,
+            finca_nombre: true,
+            verificado: true,
+            reputacion_promedio: true,
+          }
+        }
       },
     });
 

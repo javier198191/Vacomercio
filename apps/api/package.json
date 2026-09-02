@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "build": "tsc && copyfiles -u 1 src/**/*.graphql dist/ || true",
+    "lint": "tsc --noEmit",
     "start": "node dist/main.js",
     "start:dev": "ts-node-dev --respawn --transpile-only src/main.ts",
     "prisma:generate": "dotenv -e .env -- prisma generate",
@@ -22,6 +23,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
     "cookie-parser": "^1.4.7",
+    "passport-google-oauth20": "^2.0.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
@@ -35,6 +37,7 @@
     "@types/express": "^4.17.17",
     "@types/multer": "^2.1.0",
     "@types/node": "^20.3.1",
+    "@types/passport-google-oauth20": "^2.0.17",
     "@types/passport-jwt": "^4.0.1",
     "@types/ws": "^8.18.1",
     "copyfiles": "^2.4.1",

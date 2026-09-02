@@ -173,7 +173,18 @@ let LotsService = class LotsService {
         if (!lot) {
             throw new common_1.NotFoundException(`Lote con ID ${id} no encontrado.`);
         }
-        return lot;
+        const animals = lot.animals || [];
+        const cantidad = animals.length > 0 ? animals.length : (lot.cantidad || 0);
+        const peso_total = animals.length > 0
+            ? animals.reduce((sum, a) => sum + (a.peso || 0), 0)
+            : (lot.peso_total || 0);
+        const peso_promedio = cantidad > 0 ? peso_total / cantidad : (lot.peso_promedio || 0);
+        return {
+            ...lot,
+            cantidad,
+            peso_total,
+            peso_promedio,
+        };
     }
     async assignAnimals(id, animalIds) {
         await this.prisma.animal.updateMany({

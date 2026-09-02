@@ -6,6 +6,7 @@ import { FilterBar } from '@/components/marketplace/FilterBar';
 import { FeedGrid } from '@/components/marketplace/FeedGrid';
 import { LocationSelector } from '@/components/marketplace/LocationSelector';
 import type { FeedItem } from '@/components/marketplace/ProductCard';
+import { apiFetch } from '../../lib/api';
 
 // ── Shared Nav/Footer components defined inline to avoid extra files ──────────
 
@@ -103,8 +104,7 @@ export default function MarketplacePage() {
       if (filters.tipo) params.append('tipo', filters.tipo);
       if (filters.priceCategory) params.append('priceCategory', filters.priceCategory);
 
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081';
-      const res = await fetch(`${API_BASE_URL}/marketplace/feed?${params.toString()}`);
+      const res = await apiFetch(`/marketplace/feed?${params.toString()}`);
       if (!res.ok) throw new Error('Network response was not ok');
       const data = await res.json();
       const normalizedData = data.items.map((item: any) => ({

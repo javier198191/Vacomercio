@@ -46,7 +46,7 @@ model User {
   id                  String       @id
   nombre              String
   email               String       @unique
-  password            String
+  password            String?
   rol                 Role         @default(USER)
   finca_nombre        String?
   departamento        String

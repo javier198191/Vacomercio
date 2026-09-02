@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { apiFetch } from '../../../../lib/api';
+import { useAuth } from '../../../../context/AuthContext';
 
 export default function VacaInternalPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -25,11 +27,18 @@ export default function VacaInternalPage({ params }: { params: { id: string } })
   });
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081'}/animals/${params.id}`)
-      .then(res => res.json())
+    apiFetch(`/animals/${params.id}`)
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch animal details');
+        return res.json();
+      })
       .then(data => {
         setAnimal(data);
         setPrice(data.precio || '');
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
         setLoading(false);
       });
   }, [params.id]);
@@ -47,32 +56,64 @@ export default function VacaInternalPage({ params }: { params: { id: string } })
     }
   }, [animal, isEditModalOpen]);
 
+  const { user } = useAuth();
+
   const handlePublish = async () => {
+    if (!user || !user.telefono || user.telefono === 'POR_DEFINIR' || user.telefono.trim() === '') {
+      setErrorMessage("Debes registrar un número de teléfono en tu perfil para poder publicar animales.");
+      setTimeout(() => {
+        router.push(`/perfil?redirect=/mis-lotes/vaca/${params.id}`);
+      }, 1500);
+      return;
+    }
+
     setPublishing(true);
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081'}/animals/${params.id}/marketplace`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ en_marketplace: true, precio: Number(price) })
-    });
-    setPublishing(false);
-    setAnimal({ ...animal, en_marketplace: true, precio: Number(price) });
+    try {
+      const res = await apiFetch(`/animals/${params.id}/marketplace`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ en_marketplace: true, precio: Number(price) })
+      });
+      if (res.ok) {
+        // Redirect to Marketplace after publishing
+        router.push('/marketplace');
+      } else {
+        setErrorMessage("Error al publicar en el Marketplace.");
+      }
+    } catch (err) {
+      console.error(err);
+      setErrorMessage("Error de conexión al publicar.");
+    } finally {
+      setPublishing(false);
+    }
   };
 
   const handleUnpublish = async () => {
     setPublishing(true);
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081'}/animals/${params.id}/marketplace`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ en_marketplace: false })
-    });
-    setPublishing(false);
-    setAnimal({ ...animal, en_marketplace: false });
+    try {
+      const res = await apiFetch(`/animals/${params.id}/marketplace`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ en_marketplace: false })
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setAnimal(updated);
+      } else {
+        setErrorMessage("Error al retirar del Marketplace.");
+      }
+    } catch (err) {
+      console.error(err);
+      setErrorMessage("Error de conexión al retirar.");
+    } finally {
+      setPublishing(false);
+    }
   };
 
   const confirmDelete = async () => {
     setIsDeleteModalOpen(false);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081'}/animals/${params.id}`, {
+      const res = await apiFetch(`/animals/${params.id}`, {
         method: 'DELETE'
       });
       if (res.ok) {
@@ -89,7 +130,7 @@ export default function VacaInternalPage({ params }: { params: { id: string } })
   const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081'}/animals/${params.id}`, {
+      const res = await apiFetch(`/animals/${params.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -184,19 +225,19 @@ export default function VacaInternalPage({ params }: { params: { id: string } })
             <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-md">
               <h2 className="text-2xl font-bold mb-md text-on-surface">Estado de Publicación</h2>
               {animal.en_marketplace ? (
-                <div className="bg-primary-container text-on-primary-container p-md rounded-xl border border-primary/30">
+                <div className="bg-white p-md rounded-xl border border-vc-gray-mid shadow-sm">
                   <div className="flex items-center gap-xs mb-sm">
-                    <span className="material-symbols-outlined text-[32px] text-primary">public</span>
-                    <span className="text-xl font-bold">Visible en Marketplace</span>
+                    <span className="material-symbols-outlined text-[32px] text-vc-black">public</span>
+                    <span className="text-xl font-bold text-vc-black">Este animal está visible en el Marketplace</span>
                   </div>
-                  <p className="text-lg mb-md">Este animal se está ofreciendo actualmente por <strong>${Number(animal.precio).toLocaleString('es-CO')}</strong></p>
-                  <Link href={`/producto/${animal.id}`} className="block w-full text-center bg-surface-container text-on-surface font-bold py-sm rounded-xl border border-outline hover:bg-surface-container-highest transition-colors mb-sm">
+                  <p className="text-lg mb-md text-vc-black">Este animal se está ofreciendo actualmente por <strong>${Number(animal.precio).toLocaleString('es-CO')}</strong></p>
+                  <Link href={`/producto/${animal.id}`} className="block w-full text-center bg-vc-gray-light text-vc-black font-bold py-sm rounded-xl border border-vc-gray-mid hover:bg-vc-gray-mid transition-colors mb-sm">
                     Ver en Marketplace
                   </Link>
                   <button 
                     onClick={handleUnpublish} 
                     disabled={publishing}
-                    className="w-full bg-error text-white font-bold py-sm rounded-xl hover:bg-error-container hover:text-on-error-container transition-colors"
+                    className="bg-white text-vc-black border border-vc-black px-4 py-2 rounded-lg font-bold hover:bg-vc-gray-light w-full mt-4"
                   >
                     {publishing ? 'Actualizando...' : 'Retirar del Marketplace'}
                   </button>
@@ -221,7 +262,7 @@ export default function VacaInternalPage({ params }: { params: { id: string } })
                   <button 
                     onClick={handlePublish} 
                     disabled={publishing || !price}
-                    className="w-full bg-primary text-on-primary font-bold py-sm rounded-xl hover:bg-primary-container hover:text-primary transition-colors disabled:opacity-50 text-lg"
+                    className="bg-vc-black text-white px-4 py-2 rounded-lg font-bold hover:bg-vc-gray-dark w-full mt-4 disabled:opacity-50"
                   >
                     {publishing ? 'Publicando...' : 'Publicar en Marketplace'}
                   </button>
@@ -300,69 +341,69 @@ export default function VacaInternalPage({ params }: { params: { id: string } })
 
       {/* Modal de Edición */}
       {isEditModalOpen && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-surface-container-lowest rounded-2xl max-w-lg w-full p-md border border-outline-variant shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-40 flex justify-center items-center">
+          <div className="bg-white rounded-xl shadow-2xl p-6 z-50 relative max-w-lg w-full">
             <div className="flex justify-between items-center mb-md">
-              <h3 className="text-2xl font-bold text-on-surface">Editar Información del Animal</h3>
+              <h3 className="text-2xl font-bold text-vc-black">Editar Información del Animal</h3>
               <button 
                 onClick={() => setIsEditModalOpen(false)}
-                className="text-on-surface-variant hover:text-on-surface p-xs"
+                className="text-vc-black hover:text-vc-gray-dark p-xs"
               >
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
             <form onSubmit={handleSaveEdit} className="space-y-sm">
               <div>
-                <label className="block text-base font-bold mb-xs text-on-surface">Nombre</label>
+                <label className="block text-base font-bold mb-xs text-vc-black">Nombre</label>
                 <input 
                   type="text" 
                   value={editForm.nombre}
                   onChange={e => setEditForm({ ...editForm, nombre: e.target.value })}
                   required
-                  className="w-full bg-surface-container border border-outline-variant rounded-lg p-sm text-base outline-none focus:border-primary"
+                  className="border border-vc-gray-mid rounded-md p-2 w-full bg-white text-vc-black"
                 />
               </div>
               <div className="grid grid-cols-2 gap-sm">
                 <div>
-                  <label className="block text-base font-bold mb-xs text-on-surface">Peso (Kg)</label>
+                  <label className="block text-base font-bold mb-xs text-vc-black">Peso (Kg)</label>
                   <input 
                     type="number" 
                     value={editForm.peso}
                     onChange={e => setEditForm({ ...editForm, peso: e.target.value })}
                     required
-                    className="w-full bg-surface-container border border-outline-variant rounded-lg p-sm text-base outline-none focus:border-primary"
+                    className="border border-vc-gray-mid rounded-md p-2 w-full bg-white text-vc-black"
                   />
                 </div>
                 <div>
-                  <label className="block text-base font-bold mb-xs text-on-surface">Precio (COP)</label>
+                  <label className="block text-base font-bold mb-xs text-vc-black">Precio (COP)</label>
                   <input 
                     type="number" 
                     value={editForm.precio}
                     onChange={e => setEditForm({ ...editForm, precio: e.target.value })}
                     required
-                    className="w-full bg-surface-container border border-outline-variant rounded-lg p-sm text-base outline-none focus:border-primary"
+                    className="border border-vc-gray-mid rounded-md p-2 w-full bg-white text-vc-black"
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-sm">
                 <div>
-                  <label className="block text-base font-bold mb-xs text-on-surface">Departamento</label>
+                  <label className="block text-base font-bold mb-xs text-vc-black">Departamento</label>
                   <input 
                     type="text" 
                     value={editForm.departamento}
                     onChange={e => setEditForm({ ...editForm, departamento: e.target.value })}
                     required
-                    className="w-full bg-surface-container border border-outline-variant rounded-lg p-sm text-base outline-none focus:border-primary"
+                    className="border border-vc-gray-mid rounded-md p-2 w-full bg-white text-vc-black"
                   />
                 </div>
                 <div>
-                  <label className="block text-base font-bold mb-xs text-on-surface">Municipio</label>
+                  <label className="block text-base font-bold mb-xs text-vc-black">Municipio</label>
                   <input 
                     type="text" 
                     value={editForm.municipio}
                     onChange={e => setEditForm({ ...editForm, municipio: e.target.value })}
                     required
-                    className="w-full bg-surface-container border border-outline-variant rounded-lg p-sm text-base outline-none focus:border-primary"
+                    className="border border-vc-gray-mid rounded-md p-2 w-full bg-white text-vc-black"
                   />
                 </div>
               </div>
@@ -370,13 +411,13 @@ export default function VacaInternalPage({ params }: { params: { id: string } })
                 <button 
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
-                  className="bg-surface-container text-on-surface font-bold py-sm px-md rounded-xl hover:bg-surface-container-highest transition-colors text-base"
+                  className="bg-vc-gray-light text-vc-black font-bold py-2 px-4 rounded-lg hover:bg-vc-gray-mid transition-colors text-base"
                 >
                   Cancelar
                 </button>
                 <button 
                   type="submit"
-                  className="bg-primary text-on-primary font-bold py-sm px-md rounded-xl hover:bg-primary-container hover:text-primary transition-colors text-base"
+                  className="bg-vc-black text-white font-bold py-2 px-4 rounded-lg hover:bg-vc-gray-dark transition-colors text-base"
                 >
                   Guardar Cambios
                 </button>
