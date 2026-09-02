@@ -28,6 +28,9 @@ jobs:
       - name: Clean install dependencies
         run: npm ci
 
+      - name: Generate Prisma Client
+        run: npx prisma generate --schema=apps/api/prisma/schema.prisma
+
       - name: SCA Analysis (Software Composition Analysis)
         run: npm audit --omit=dev --audit-level=critical
 
