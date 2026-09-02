@@ -1,0 +1,38 @@
+name: CI Backend
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+
+jobs:
+  security-and-build:
+    name: Security & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js v22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Clean install dependencies
+        run: npm ci
+
+      - name: SCA Analysis (Software Composition Analysis)
+        run: npm audit --audit-level=high
+
+      - name: Basic SAST Analysis (Linter / Static Analysis)
+        run: npm run lint
+
+      - name: Build Verification (apps/api NestJS)
+        run: npm run build -w apps/api
